@@ -1,0 +1,120 @@
+#!/usr/bin/env oo-ruby
+#--
+# Copyright 2013 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#++
+
+require 'rubygems'
+require 'openshift/load-balancer/controllers/f5'
+require 'openshift/load-balancer/models/f5'
+
+# Initialize the controller lazily, so we initialize it exactly zero
+# times if we never use it and exactly one time if we do use it.
+class LazyLBController
+  def method_missing m, *args, &block
+    @lb_controller ||= @lb_controller_class.new @lb_model_class.new
+    @lb_controller.send m, *args, &block
+  end
+
+  def initialize
+    @lb_controller_class = OpenShift::F5LoadBalancerController
+    @lb_model_class = OpenShift::F5LoadBalancerModel
+  end
+end
+
+lb = LazyLBController.new
+
+# Group command-line arguments by semicolons.
+#
+# TODO: If we ensure that we are using Ruby 1.9 or newer, then we can
+# use slice_before instead.
+argvs = ARGV.inject([[]]) do |args,arg|
+  if arg==';'
+    args.push []
+  else
+    args.last.push arg
+  end
+  args
+end.select {|argv| not argv.empty?}
+
+exitval = 0
+argvs.each do |argv|
+  begin
+    case argv.shift
+    when 'list-pools'
+      puts 'Listing pools.'
+      puts lb.pools.map{|k,v|"  #{k} (#{v.members.length} members)\n"}.join
+
+    when 'add-pool'
+      raise "Requires a pool name." unless 1 == argv.count
+      puts "Adding pool #{argv[0]}."
+      lb.create_pool *argv
+
+    when 'delete-pool'
+      raise "Requires a pool name." unless 1 == argv.count
+      puts "Deleting pool #{argv[0]}."
+      lb.delete_pool *argv
+
+    when 'list-routes'
+      raise "Requires no arguments." unless argv.empty?
+      puts 'Listing routes.'
+      puts lb.routes.map { |r|
+        if lb.active_routes.include? r
+          r
+        else
+          r + " (inactive)"
+        end
+      }.join "\n"
+      # TODO: Extend the LoadBalancerController class with a method that
+      # provides additional information about routes.
+
+    when 'add-route'
+      raise "Requires a name, path, and pool name." unless 3 == argv.length
+      puts "Adding route #{argv[1]} for path #{argv[2]} to pool #{argv[0]}."
+      lb.create_route *argv
+
+    when 'delete-route'
+      raise "Requires a pool name." unless 2 == argv.length
+      puts "Deleting route #{argv[1]} from pool #{argv[0]}."
+      lb.delete_route *argv
+
+    when 'list-pool-members'
+      raise "Requires a pool name." unless 1 == argv.length
+      puts "Listing pool members for pool #{argv[0]}."
+      pool_name = *argv
+      members = lb.pools[pool_name].members
+      puts "Pool #{pool_name} has #{members.count} members:\n" + members.map {|m| "  "+m+"\n"}.join
+
+    when 'add-pool-member'
+      raise "Requires a name and host:port." unless 2 == argv.length
+      puts "Adding pool member #{argv[0]} for pool #{argv[1]}."
+      lb.pools[argv[0]].add_member *argv[1].split(':')
+
+    when 'delete-pool-member'
+      raise "Requires a name and host:port." unless 2 == argv.length
+      puts "Deleting pool member #{argv[0]} from pool #{argv[1]}."
+      lb.pools[argv[0]].delete_member *argv[1].split(':')
+
+    else
+      raise "Usage: #{$0} {list-pools|add-pool <name>|delete-pool <name>|list-routes|add-route <pool> <name> <path>|delete-route <pool> <route_name>|list-pool-members <pool>|add-pool-member <pool> <host>:<port>|delete-pool-member <pool> <host>:<port>}"
+    end
+
+  rescue => e
+    $stderr.puts(e.to_s)
+    $stderr.puts(e.backtrace)
+    exit 1
+  end
+end
+
+exit(exitval.to_i)
