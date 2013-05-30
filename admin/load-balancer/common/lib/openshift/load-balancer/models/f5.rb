@@ -14,11 +14,11 @@ module OpenShift
     end
 
     def create_pools pool_names
-      @bigip['LocalLB.Pool'].create [pool_names], ['LB_METHOD_ROUND_ROBIN'], []
+      @bigip['LocalLB.Pool'].create pool_names, ['LB_METHOD_ROUND_ROBIN'], []
     end
 
     def delete_pools pool_names
-      @bigip['LocalLB.Pool'].delete_pool [pool_names]
+      @bigip['LocalLB.Pool'].delete_pool pool_names
     end
 
     def get_route_names
