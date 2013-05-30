@@ -185,7 +185,7 @@ module OpenShift
 
     def initialize host=nil, user=nil, passwd=nil
       @host, @user, @passwd = host, user, passwd
-      @default_pool = 'pool_securepayments.paypal.com-443'
+      @default_pool = 'foo-443'
       # XXX: Dehardcode @default_pool.
     end
 
