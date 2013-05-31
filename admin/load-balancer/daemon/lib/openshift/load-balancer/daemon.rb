@@ -51,7 +51,7 @@ module OpenShift
       read_config
 
       $stderr.print "Initializing load-balancer controller...\n"
-      @lb_controller = @lb_controller_class.new @lb_model_class.new
+      @lb_controller = @lb_controller_class.new @lb_model_class
       $stderr.print "Found #{@lb_controller.pools.length} pools:\n"
       $stderr.print @lb_controller.pools.map{|k,v|"  #{k} (#{v.members.length} members)\n"}.join
 

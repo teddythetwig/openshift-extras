@@ -23,7 +23,7 @@ require 'openshift/load-balancer/models/f5'
 # times if we never use it and exactly one time if we do use it.
 class LazyLBController
   def method_missing m, *args, &block
-    @lb_controller ||= @lb_controller_class.new @lb_model_class.new
+    @lb_controller ||= @lb_controller_class.new @lb_model_class
     @lb_controller.send m, *args, &block
   end
 

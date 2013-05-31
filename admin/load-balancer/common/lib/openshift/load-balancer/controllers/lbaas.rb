@@ -308,10 +308,10 @@ module OpenShift
       end
     end
 
-    def initialize lb_model
+    def initialize lb_model_class
       read_config
 
-      @lb_model = lb_model
+      @lb_model = lb_model_class.new @lbaas_host, @lbaas_username, @lbaas_password
 
       $stderr.print "Authenticating with keystone at host #{@lbaas_keystone_host}...\n"
       @lb_model.authenticate @lbaas_keystone_host, @lbaas_username, @lbaas_password
