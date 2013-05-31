@@ -12,12 +12,12 @@ module OpenShift
 
     # Returns [String] of pool names.
     def get_pool_names
-      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/lbms/pools", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
+      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/#{@tenant}/pools", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
     end
 
     # Returns [String] of job ids.
     def create_pool pool_name
-      response = RestClient.put("http://#{@host}/loadbalancers/tenant/lbms/pools/#{pool_name}",
+      response = RestClient.put("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}",
                                 {
                                   :pool => {
                                     :name => pool_name,
@@ -37,7 +37,7 @@ module OpenShift
 
     # Returns [String] of job ids.
     def delete_pool pool_name
-      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/lbms/pools/#{pool_name}",
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}",
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
@@ -48,7 +48,7 @@ module OpenShift
 
     # Returns [String] of route names.
     def get_route_names
-      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/lbms/policies", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
+      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/#{@tenant}/policies", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
     end
 
     def get_active_route_names
@@ -58,7 +58,7 @@ module OpenShift
 
     # Returns [String] of job ids.
     def create_route pool_name, route_name, path
-      response = RestClient.put("http://#{@host}/loadbalancers/tenant/lbms/policies/#{route_name}",
+      response = RestClient.put("http://#{@host}/loadbalancers/tenant/#{@tenant}/policies/#{route_name}",
                                 {
                                   :policy => {
                                     :name => route_name,
@@ -75,7 +75,7 @@ module OpenShift
 
     # Returns [String] of job ids.
     def delete_route pool_name, route_name
-      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/lbms/policies/#{route_name}",
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/policies/#{route_name}",
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
@@ -86,14 +86,14 @@ module OpenShift
 
     # Returns [String] of pool names.
     def get_pool_members pool_name
-      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/lbms/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool'].map {|p| p['name']}
+      JSON.parse(RestClient.get("http://#{@lbaas_host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool'].map {|p| p['name']}
     end
 
     alias_method :get_active_pool_members, :get_pool_members
 
     # Returns [String] of job ids.
     def add_pool_members pool_names, member_lists
-      response = RestClient.post("http://#{@host}/loadbalancers/tenant/lbms/pools",
+      response = RestClient.post("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools",
                                  (pool_names.zip member_lists).map do |pool_name, members|
                                  {
                                    :pool => {
@@ -118,7 +118,7 @@ module OpenShift
 
     # Returns [String] of job ids.
     def delete_pool_member pool_name, address, port
-      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/lbms/pools/services/#{address + ':' + port.to_s}",
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/services/#{address + ':' + port.to_s}",
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
@@ -129,7 +129,7 @@ module OpenShift
 
     # Returns Hash representing the JSON response from the load balancer.
     def get_job_status id
-      response = RestClient.get("http://#{@host}/loadbalancers/tenant/lbms/jobs/#{id}",
+      response = RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/jobs/#{id}",
                                 :content_type => :json,
                                 :accept => :json,
                                 :'X-Auth-Token' => @keystone_token)
@@ -141,7 +141,7 @@ module OpenShift
     # Returns String representing the keystone token and sets @keystone_token to
     # the same.  This method must be called before the others, which use
     # @keystone_token.
-    def authenticate host, user=@user, passwd=@passwd
+    def authenticate host, user=@user, passwd=@passwd, tenant=@tenant
       response = RestClient.post("http://#{host}/v2.0/tokens",
                                  {
                                    :auth => {
@@ -183,8 +183,8 @@ module OpenShift
       @keystone_token = JSON.parse(response)['access']['token']['id']
     end
 
-    def initialize host, user=nil, passwd=nil
-      @host, @user, @passwd = host, user, passwd
+    def initialize host, user=nil, passwd=nil, tenant=nil
+      @host, @user, @passwd, @tenant = host, user, passwd, tenant
       @default_pool = 'foo-443'
       # XXX: Dehardcode @default_pool.
     end
