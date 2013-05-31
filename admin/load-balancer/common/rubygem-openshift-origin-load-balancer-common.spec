@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.1
+Version: 0.2
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,9 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Fri May 31 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.2-1
+- 
+
 * Fri May 31 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.1-1
 - new package built with tito
 
