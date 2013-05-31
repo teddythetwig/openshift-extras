@@ -134,6 +134,7 @@ module OpenShift
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
 
       @lbaas_host = cfg['LBAAS_HOST'] || '127.0.0.1'
+      @lbaas_keystone_host = cfg['LBAAS_KEYSTONE_HOST'] || @lbaas_host
       @lbaas_username = cfg['LBAAS_USERNAME'] || 'admin'
       @lbaas_password = cfg['LBAAS_PASSWORD'] || 'passwd'
 
@@ -312,8 +313,8 @@ module OpenShift
 
       @lb_model = lb_model
 
-      $stderr.print "Authenticating with the load-balancer at host #{@lbaas_host}...\n"
-      @lb_model.authenticate @lbaas_host, @lbaas_username, @lbaas_password
+      $stderr.print "Authenticating with keystone at host #{@lbaas_keystone_host}...\n"
+      @lb_model.authenticate @lbaas_keystone_host, @lbaas_username, @lbaas_password
 
       # If the pool has been created or is being created in the load balancer, it will be in @pools.
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]

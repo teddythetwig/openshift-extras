@@ -58,5 +58,5 @@ Using LBaaS
 
 After enabling the LBaaS module as described in the section on configuring the
 daemon, edit /etc/openshift/load-balancer.conf to set the appropriate values for
-LBAAS_HOST, LBAAS_USERNAME, and LBAAS_PASSWORD to match your LBaaS
-configuration.
+LBAAS_HOST, LBAAS_KEYSTONE_HOST, LBAAS_USERNAME, and LBAAS_PASSWORD to match
+your LBaaS configuration.
