@@ -1129,8 +1129,8 @@ class OODiag
       may result in node execution failures. Please check that the correct
       context is set on /usr/sbin/mcollectived and that the correct SELinux
       policies are loaded.
-        Expected: #{expected.join ":"}
-        Found: #{context.join ":"}
+        Expected: #{expected}
+        Found: #{context}
       CONTEXT
       # TODO: which policies are those?
     end
