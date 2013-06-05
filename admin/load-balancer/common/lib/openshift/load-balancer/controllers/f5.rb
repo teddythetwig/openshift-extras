@@ -24,7 +24,7 @@ module OpenShift
     # address:port to represent each pool member.
     #
     class Pool < LoadBalancerController::Pool
-      attr_reader :members
+      attr_reader :members, :name
 
       def initialize lb_controller, lb_model, pool_name
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name

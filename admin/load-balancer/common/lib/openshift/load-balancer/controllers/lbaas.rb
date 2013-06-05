@@ -27,6 +27,8 @@ module OpenShift
     # when the pool has only just been created on the load balancer.
     #
     class Pool < LoadBalancerController::Pool
+      attr_reader :members, :name
+
       def initialize lb_controller, lb_model, pool_name
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
         @members = @lb_model.get_pool_members pool_name
