@@ -12,7 +12,7 @@ module OpenShift
 
     # Returns [String] of pool names.
     def get_pool_names
-      JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
+      JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['tenantpools']['pools']
     end
 
     # Returns [String] of job ids.
