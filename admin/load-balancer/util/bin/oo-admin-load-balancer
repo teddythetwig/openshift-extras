@@ -27,6 +27,11 @@ class LazyLBController
     @lb_controller.send m, *args, &block
   end
 
+  def update
+    # Only proxy the update method if we have proxied other method invocations..
+    method_missing :update if @lb_controller
+  end
+
   def initialize
     @lb_controller_class = OpenShift::F5LoadBalancerController
     @lb_model_class = OpenShift::F5LoadBalancerModel
@@ -116,5 +121,6 @@ argvs.each do |argv|
     exit 1
   end
 end
+lb.update
 
 exit(exitval.to_i)
