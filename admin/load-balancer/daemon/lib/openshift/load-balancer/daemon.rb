@@ -82,9 +82,9 @@ module OpenShift
 
     def handle event
       case event[:action]
-      when :add
+      when :add_gear
         add_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
-      when :delete
+      when :delete_gear
         remove_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
       end
     end
