@@ -141,7 +141,7 @@ module OpenShift
       @lbaas_password = cfg['LBAAS_PASSWORD'] || 'passwd'
       @lbaas_tenant = cfg['LBAAS_TENANT'] || 'lbms'
 
-      @debug = cfg['DEBUG']
+      @debug = cfg['DEBUG'] == 'true'
     end
 
     # Set the @blocked_on_cnt of the given Operation to the size of the given

@@ -44,7 +44,7 @@ module OpenShift
         raise Exception.new 'No load-balancer configured.'
       end
 
-      @debug = cfg['DEBUG']
+      @debug = cfg['DEBUG'] == 'true'
     end
 
     def initialize
