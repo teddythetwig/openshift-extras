@@ -163,7 +163,7 @@ module OpenShift
                                  :'X-Auth-Token' => temp_token)
       raise Exception.new unless response.code == 200
 
-      tenant_id = JSON.parse(response)['tenants'].select {|t| t[:name] == user}.first['id']
+      tenant_id = JSON.parse(response)['tenants'].select {|t| t['name'] == user}.first['id']
 
       response = RestClient.post("http://#{host}/v2.0/tokens",
                                  {
