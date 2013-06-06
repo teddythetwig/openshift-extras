@@ -40,7 +40,7 @@ module OpenShift
     # create_route :: String, String, String -> undefined
     # Note: At least one of create_route and create_routes must be implemented.
     def create_route pool_name, route_name, path
-      create_routes [pool_name], [route_name]
+      create_routes [pool_name], [[route_name, path]]
     end
 
     # create_routes :: [String], [[String,String]] -> undefined

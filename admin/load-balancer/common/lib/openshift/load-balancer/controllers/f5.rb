@@ -89,7 +89,7 @@ module OpenShift
     def create_route pool_name, profile_name, profile_path
       raise Exception.new "Profile already exists: #{profile_name}" if @routes.include? profile_name
 
-      @lb_model.create_routes [pool_name], [[profile_name, profile_path]]
+      @lb_model.create_route pool_name, profile_name, profile_path
 
       @routes.push profile_name
       @active_routes.push profile_name
@@ -98,7 +98,7 @@ module OpenShift
     def delete_route pool_name, route_name
       raise Exception.new "Profile not found: #{route_name}" unless @routes.include? route_name
 
-      @lb_model.delete_route [pool_name], [route_name] if @active_routes.include? route_name
+      @lb_model.delete_route pool_name, route_name if @active_routes.include? route_name
 
       @routes.delete route_name
       @active_routes.delete route_name
