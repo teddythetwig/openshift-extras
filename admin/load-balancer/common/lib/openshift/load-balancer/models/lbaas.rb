@@ -8,7 +8,7 @@ module OpenShift
   #
   # This class contains minimal logic and no error checking; its sole
   # purpose is to hide REST calls behind a more convenient interface.
-  class LBaaSLoadBalancerModel
+  class LBaaSLoadBalancerModel < LoadBalancerModel
 
     # Returns [String] of pool names.
     def get_pool_names
