@@ -94,20 +94,19 @@ module OpenShift
     # Returns [String] of job ids.
     def add_pool_members pool_names, member_lists
       response = RestClient.post("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools",
-                                 (pool_names.zip member_lists).map do |pool_name, members|
                                  {
-                                   :pool => {
-                                     :services => members.map do |address,port| {
-                                       :ip => address,
-                                       :enabled => false,
-                                       :name => address + ':' + port.to_s,
-                                       :weight => 10,
-                                       :port => port
-                                     } end,
-                                     :name => pool_name
-                                   }
-                                 }
-                                 end.to_json,
+                                   :pool =>
+                                     (pool_names.zip member_lists).map do |pool_name, members| {
+                                       :services => members.map do |address,port| {
+                                         :ip => address,
+                                         :enabled => false,
+                                         :name => address + ':' + port.to_s,
+                                         :weight => 10,
+                                         :port => port
+                                       } end,
+                                       :name => pool_name
+                                     } end
+                                 }.to_json,
                                  :content_type => :json,
                                  :accept => :json,
                                  :'X-Auth-Token' => @keystone_token)
