@@ -289,6 +289,11 @@ module OpenShift
       end
     end
 
+    # Returns a Hash representing the JSON response from the load balancer.
+    def get_job_status id
+      @lb_model.get_job_status id
+    end
+
     # Poll the load balancer for completion of submitted jobs and handle any
     # jobs that are completed.
     def poll_async_jobs

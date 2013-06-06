@@ -57,6 +57,11 @@ exitval = 0
 argvs.each do |argv|
   begin
     case argv.shift
+    when 'get-job-status'
+      raise 'Requires a job id.' unless 1 == argv.count
+      puts "Requesting status of job #{argv[0]}."
+      puts lb.get_job_status argv[0]
+
     when 'list-pools'
       puts 'Listing pools.'
       puts lb.pools.map{|k,v|"  #{k} (#{v.members.length} members)\n"}.join
