@@ -94,25 +94,25 @@ module OpenShift
       @lb_controller.update
     end
 
-    def pool_name_for_gear app_name, namespace, gear_host, gear_port
+    def generate_pool_name app_name, namespace
       "/Common/ose-#{app_name}-#{namespace}-80"
     end
 
-    def profile_name_for_gear app_name, namespace, gear_host, gear_port
+    def generate_route_name app_name, namespace
       "/Common/ose-#{app_name}-#{namespace}"
     end
 
     def add_gear app_name, namespace, gear_host, gear_port
-      pool_name = pool_name_for_gear app_name, namespace, gear_host, gear_port
+      pool_name = generate_pool_name app_name, namespace
 
       unless @lb_controller.pools.include? pool_name
         $stderr.print "Creating new pool: #{pool_name}\n"
         @lb_controller.create_pool pool_name
 
-        profile_name = profile_name_for_gear app_name, namespace, gear_host, gear_port
+        route_name = generate_route_name app_name, namespace
         route = '/' + app_name
-        $stderr.print "Creating new routing rule #{profile_name} for route #{route} to pool #{pool_name}\n"
-        @lb_controller.create_route pool_name, profile_name, route
+        $stderr.print "Creating new routing rule #{route_name} for route #{route} to pool #{pool_name}\n"
+        @lb_controller.create_route pool_name, route_name, route
       end
 
       $stderr.print "Adding new member #{gear_host}:#{gear_port} to pool #{pool_name}\n"
@@ -120,15 +120,15 @@ module OpenShift
     end
 
     def remove_gear app_name, namespace, gear_host, gear_port
-      pool_name = pool_name_for_gear app_name, namespace, gear_host, gear_port
+      pool_name = generate_pool_name app_name, namespace
 
       $stderr.print "Deleting member #{gear_host}:#{gear_port} from pool #{pool_name}\n"
       @lb_controller.pools[pool_name].delete_member gear_host, gear_port.to_i
 
       if @lb_controller.pools[pool_name].members.length < 1
-        profile_name = profile_name_for_gear app_name, namespace, gear_host, gear_port
-        $stderr.print "Deleting routing rule: #{profile_name}\n"
-        @lb_controller.delete_route pool_name, profile_name
+        route_name = generate_route_name app_name, namespace
+        $stderr.print "Deleting routing rule: #{route_name}\n"
+        @lb_controller.delete_route pool_name, route_name
 
         $stderr.print "Deleting empty pool: #{pool_name}\n"
         @lb_controller.delete_pool pool_name
