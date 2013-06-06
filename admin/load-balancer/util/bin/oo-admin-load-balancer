@@ -59,12 +59,12 @@ argvs.each do |argv|
     when 'add-pool'
       raise "Requires a pool name." unless 1 == argv.count
       puts "Adding pool #{argv[0]}."
-      lb.create_pool *argv
+      lb.create_pool argv[0]
 
     when 'delete-pool'
       raise "Requires a pool name." unless 1 == argv.count
       puts "Deleting pool #{argv[0]}."
-      lb.delete_pool *argv
+      lb.delete_pool argv[0]
 
     when 'list-routes'
       raise "Requires no arguments." unless argv.empty?
@@ -92,7 +92,7 @@ argvs.each do |argv|
     when 'list-pool-members'
       raise "Requires a pool name." unless 1 == argv.length
       puts "Listing pool members for pool #{argv[0]}."
-      pool_name = *argv
+      pool_name = argv[0]
       members = lb.pools[pool_name].members
       puts "Pool #{pool_name} has #{members.count} members:\n" + members.map {|m| "  "+m+"\n"}.join
 
