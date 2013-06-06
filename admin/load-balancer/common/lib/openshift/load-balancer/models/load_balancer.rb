@@ -74,7 +74,7 @@ module OpenShift
     # Note: At least one of add_pool_member and add_pool_members must be
     # implemented.
     def add_pool_member pool_name, address, port
-      add_pool_members [pool_name], [[address, port]]
+      add_pool_members [pool_name], [[[address, port]]]
     end
 
     # add_pool_members :: [String], [[[String,Integer]]] -> undefined
