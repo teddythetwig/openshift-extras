@@ -131,6 +131,7 @@ module OpenShift
     # field of Operand.
 
     attr_reader :ops # [Operation]
+    attr_reader :routes, :active_routes
 
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
