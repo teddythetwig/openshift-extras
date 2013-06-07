@@ -30,7 +30,7 @@ module OpenShift
                                 :content_type => :json,
                                 :accept => :json,
                                 :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -41,7 +41,7 @@ module OpenShift
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -68,7 +68,7 @@ module OpenShift
                                 :content_type => :json,
                                 :accept => :json,
                                 :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -79,7 +79,7 @@ module OpenShift
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -110,7 +110,7 @@ module OpenShift
                                  :content_type => :json,
                                  :accept => :json,
                                  :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -121,7 +121,7 @@ module OpenShift
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 202
+      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
       JSON.parse(response)['Lb_Job_List']['jobIds']
     end
@@ -132,7 +132,7 @@ module OpenShift
                                 :content_type => :json,
                                 :accept => :json,
                                 :'X-Auth-Token' => @keystone_token)
-      raise Exception.new unless response.code == 200
+      raise Exception.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       JSON.parse(response)
     end
@@ -152,7 +152,7 @@ module OpenShift
                                  }.to_json,
                                  :content_type => :json,
                                  :accept => :json)
-      raise Exception.new unless response.code == 200
+      raise Exception.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       temp_token = JSON.parse(response)['access']['token']['id']
 
@@ -160,7 +160,7 @@ module OpenShift
                                  :content_type => :json,
                                  :accept => :json,
                                  :'X-Auth-Token' => temp_token)
-      raise Exception.new unless response.code == 200
+      raise Exception.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       tenant_id = JSON.parse(response)['tenants'].select {|t| t['name'] == user}.first['id']
 
@@ -177,7 +177,7 @@ module OpenShift
                                  }.to_json,
                                  :content_type => :json,
                                  :accept => :json)
-      raise Exception.new unless response.code == 200
+      raise Exception.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
     end
