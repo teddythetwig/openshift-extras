@@ -29,9 +29,13 @@ module OpenShift
     class Pool < LoadBalancerController::Pool
       attr_reader :members, :name
 
-      def initialize lb_controller, lb_model, pool_name
+      def initialize lb_controller, lb_model, pool_name, request_members=true
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
-        @members = @lb_model.get_pool_members pool_name
+        if request_members
+          @members = @lb_model.get_pool_members pool_name
+        else
+          @members = Array.new
+        end
       end
 
       # Add a member to the object's internal list of members.  This
@@ -179,7 +183,7 @@ module OpenShift
       # are deleting pool of the same name.
       queue_op Operation.new(:create_pool, [pool_name]), @ops.select {|op| op.type == :delete_pool && op.operands[0] == pool_name}
 
-      @pools[pool_name] = Pool.new self, @lb_model, pool_name
+      @pools[pool_name] = Pool.new self, @lb_model, pool_name, false
     end
 
     def delete_pool pool_name
