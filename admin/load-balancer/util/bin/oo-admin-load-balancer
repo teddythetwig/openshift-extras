@@ -90,7 +90,7 @@ argvs.each do |argv|
       # provides additional information about routes.
 
     when 'add-route'
-      raise "Requires a name, path, and pool name." unless 3 == argv.length
+      raise "Requires a pool name, name, and path." unless 3 == argv.length
       puts "Adding route #{argv[1]} for path #{argv[2]} to pool #{argv[0]}."
       lb.create_route *argv
 
