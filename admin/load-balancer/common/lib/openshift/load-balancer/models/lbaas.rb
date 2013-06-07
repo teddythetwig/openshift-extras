@@ -48,7 +48,7 @@ module OpenShift
 
     # Returns [String] of route names.
     def get_route_names
-      JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/policies", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)).map {|p| p['name']}
+      JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/policies", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['policy'].map {|p| p['name']}
     end
 
     def get_active_route_names
