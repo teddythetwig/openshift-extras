@@ -121,9 +121,14 @@ module OpenShift
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
-      raise Exception.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
-
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      case response.code
+      when 202
+        JSON.parse(response)['Lb_Job_List']['jobIds']
+      when 204
+        []
+      else
+        raise Exception.new "Expected HTTP 202 or 204 but got #{response.code} instead"
+      end
     end
 
     # Returns Hash representing the JSON response from the load balancer.
