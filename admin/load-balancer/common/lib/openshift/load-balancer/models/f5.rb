@@ -13,8 +13,29 @@ module OpenShift
       @bigip['LocalLB.Pool'].get_list
     end
 
-    def create_pools pool_names
+    def create_pools pool_names, monitor_names
       @bigip['LocalLB.Pool'].create pool_names, ['LB_METHOD_ROUND_ROBIN'], []
+      @bigip['LocalLB.Pool'].set_monitor_association pool_names.zip(monitor_names).map { |pool,monitor|
+        if monitor
+          {
+            :pool_name => pool,
+            :monitor_rule => {
+              :type => 'MONITOR_RULE_TYPE_SINGLE',
+              :quorum => 1,
+              :monitor_templates => [monitor],
+            },
+          }
+        else
+          {
+            :pool_name => pool,
+            :monitor_rule => {
+              :type => 'MONITOR_RULE_TYPE_NONE',
+              :quorum => 1,
+              :monitor_templates => [],
+            },
+          }
+        end
+      }
     end
 
     def delete_pools pool_names

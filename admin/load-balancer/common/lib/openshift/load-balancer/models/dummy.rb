@@ -13,8 +13,8 @@ module OpenShift
       []
     end
 
-    def create_pool pool_name
-      puts "create pool #{pool_name}"
+    def create_pool pool_name, monitor_name
+      puts "create pool #{pool_name} with monitor #{monitor_name}"
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
 

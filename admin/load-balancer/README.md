@@ -38,9 +38,9 @@ following steps to install the required rubygems:
    scl enable ruby193 'gem install f5-icontrol-10.2.0.2.gem'
 
 After enabling the F5 module as described in the section on configuring the
-daemon, edit /etc/openshift/load-balancer.conf to set the appropriate
-values for BIGIP_HOST, BIGIP_USERNAME, and BIGIP_PASSWORD to match your F5
-BIG-IP LTM configuration.
+daemon, edit /etc/openshift/load-balancer.conf to set the appropriate values
+for BIGIP_HOST, BIGIP_USERNAME, BIGIP_PASSWORD, and BIGIP_MONITOR to match your
+F5 BIG-IP LTM configuration.
 
 F5 BIG-IP must be configured with a virtual server that has been assigned at
 least one VIP.  The daemon will automatically create pools and associated HTTP
@@ -58,5 +58,15 @@ Using LBaaS
 
 After enabling the LBaaS module as described in the section on configuring the
 daemon, edit /etc/openshift/load-balancer.conf to set the appropriate values for
-LBAAS_HOST, LBAAS_KEYSTONE_HOST, LBAAS_USERNAME, LBAAS_PASSWORD, and
-LBAAS_TENANT to match your LBaaS configuration.
+LBAAS_HOST, LBAAS_KEYSTONE_HOST, LBAAS_USERNAME, LBAAS_PASSWORD, LBAAS_TENANT,
+and LBAAS_MONITOR to match your LBaaS configuration.
+
+Monitors
+--------
+The F5 and LBaaS backends can add an existing monitor to newly created pools.
+Set the appropriate option (BIGIP_MONITOR for F5, LBAAS_MONITOR for LBaaS) to
+the name of the monitor you would like to use, or leave the option unspecified
+to disable this functionality.
+
+The daemon does not create the monitor itself; it is incumbent on the
+administrator to define the monitors prior to running the daemon.

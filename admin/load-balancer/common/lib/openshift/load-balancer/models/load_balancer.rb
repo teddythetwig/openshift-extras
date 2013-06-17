@@ -9,15 +9,15 @@ module OpenShift
     def get_pool_names
     end
 
-    # create_pool :: String -> undefined
+    # create_pool :: String, String -> undefined
     # Note: At least one of create_pool and create_pools must be implemented.
-    def create_pool pool_name
+    def create_pool pool_name, monitor_name
     end
 
-    # create_pools :: [String] -> undefined
+    # create_pools :: [String], [String] -> undefined
     # Note: At least one of create_pool and create_pools must be implemented.
-    def create_pools pool_names
-      pool_names.map {|pool_name| create_pool pool_name}.flatten 1
+    def create_pools pool_names, monitor_names
+      pool_names.zip(monitor_names).map {|pool_name, monitor_name| create_pool pool_name, monitor_name}.flatten 1
     end
 
     # delete_pool :: String -> undefined

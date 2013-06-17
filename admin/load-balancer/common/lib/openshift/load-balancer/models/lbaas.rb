@@ -16,7 +16,7 @@ module OpenShift
     end
 
     # Returns [String] of job ids.
-    def create_pool pool_name
+    def create_pool pool_name, monitor_name='http'
       response = RestClient.put("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}",
                                 {
                                   :pool => {
@@ -24,7 +24,7 @@ module OpenShift
                                     :method => 'LeastConnection',
                                     :port => '80',
                                     :enabled => false,
-                                    :monitors => ["http"]
+                                    :monitors => [monitor_name]
                                   }
                                 }.to_json,
                                 :content_type => :json,
