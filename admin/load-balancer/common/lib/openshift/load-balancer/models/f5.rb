@@ -33,9 +33,9 @@ module OpenShift
       route_names, paths = routes.transpose
       priority = @bigip['LocalLB.VirtualServer'].get_httpclass_profile(['ose-vlan'])[0].map{|pri| pri.priority}.max || 0
       @bigip['LocalLB.ProfileHttpClass'].create route_names
-      @bigip['LocalLB.ProfileHttpClass'].add_path_match_pattern route_names, paths.map {|path| [{:pattern=>path, :is_glob=>true}]}
+      @bigip['LocalLB.ProfileHttpClass'].add_path_match_pattern route_names, paths.map {|path| [{:pattern=>"#{path}(/.*)?", :is_glob=>false}]}
       @bigip['LocalLB.ProfileHttpClass'].set_pool_name route_names, pool_names.map{|name| {:value=>name, :default_flag=>false}}
-      @bigip['LocalLB.ProfileHttpClass'].set_rewrite_url route_names, route_names.map{|| {:value=>'/', :default_flag=>false}}
+      @bigip['LocalLB.ProfileHttpClass'].set_rewrite_url route_names, paths.map{|path| {:value=>"[string map { \"#{path}\" \"/\" } [HTTP::uri]]", :default_flag=>false}}
       @bigip['LocalLB.VirtualServer'].add_httpclass_profile ['ose-vlan'], [route_names.map {|name| {:profile_name=>name, :priority=>(priority += 1)}}]
     end
 
