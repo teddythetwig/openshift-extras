@@ -45,7 +45,7 @@ module OpenShift
       def add_member address, port
         member = address + ':' + port.to_s
 
-        raise Exception.new "Adding a gear to a pool of which the gear is already a member" if @members.include? member
+        raise Exception.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
 
         # :add_pool_member blocks
         # if the corresponding pool is being created,
@@ -64,7 +64,7 @@ module OpenShift
       def delete_member address, port
         member = address + ':' + port.to_s
 
-        raise Exception.new "Deleting a gear from a pool of which the gear is not a member" unless @members.include? member
+        raise Exception.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
 
         # :delete_pool_member blocks
         # if the corresponding pool is being created,
@@ -158,7 +158,7 @@ module OpenShift
     # that block the new Operation.  It is good practice to document how this
     # Array is computed for each invocation of queue_op.
     def queue_op newop, blocking_ops
-      raise Exception.new 'Got an exception of undefined type' unless newop.type
+      raise Exception.new 'Got an operation with no type' unless newop.type
       newop.operands ||= []
       newop.blocked_on_cnt = blocking_ops.count
       newop.jobids ||= []

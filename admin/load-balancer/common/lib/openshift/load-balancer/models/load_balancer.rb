@@ -1,5 +1,7 @@
 module OpenShift
 
+  class LBModelException < StandardError; end
+
   # == Abstract load-balancer model class
   #
   # Presents direct access to a load balancer.  This is an abstract class.

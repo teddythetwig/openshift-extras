@@ -1,5 +1,7 @@
 module OpenShift
 
+  class LBControllerException < StandardError; end
+
   # == Abstract load-balancer controller class
   #
   # Represents a load balancer for the OpenShift Enterprise
