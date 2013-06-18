@@ -41,7 +41,7 @@ module OpenShift
         @lb_controller_class = OpenShift::F5LoadBalancerController
       when 'lbaas'
         @lb_model_class = OpenShift::LBaaSLoadBalancerModel
-        @lb_controller_class = OpenShift::LBaaSLoadBalancerController
+        @lb_controller_class = OpenShift::AsyncLoadBalancerController
       else
         raise StandardError.new 'No load-balancer configured.'
       end
