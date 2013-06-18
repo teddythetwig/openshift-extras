@@ -81,15 +81,20 @@ module OpenShift
     end
 
     def handle event
-      case event[:action]
-      when :create_application
-        create_application event[:app_name], event[:namespace]
-      when :delete_application
-        delete_application event[:app_name], event[:namespace]
-      when :add_gear
-        add_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
-      when :delete_gear
-        remove_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
+      begin
+        case event[:action]
+        when :create_application
+          create_application event[:app_name], event[:namespace]
+        when :delete_application
+          delete_application event[:app_name], event[:namespace]
+        when :add_gear
+          add_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
+        when :delete_gear
+          remove_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
+        end
+      rescue => e
+        $stderr.puts "Got an exception: #{e.message}"
+        $stderr.puts "Backtrace: #{e.backtrace}"
       end
     end
 
