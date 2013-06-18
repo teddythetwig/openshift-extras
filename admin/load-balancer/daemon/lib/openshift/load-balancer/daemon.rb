@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'openshift/load-balancer/controllers/f5'
 require 'openshift/load-balancer/models/f5'
+require 'openshift/load-balancer/controllers/lbaas'
+require 'openshift/load-balancer/models/lbaas'
 require 'parseconfig'
 require 'stomp'
 require 'timeout'

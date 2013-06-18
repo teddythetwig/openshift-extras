@@ -18,6 +18,8 @@
 require 'rubygems'
 require 'openshift/load-balancer/controllers/f5'
 require 'openshift/load-balancer/models/f5'
+require 'openshift/load-balancer/controllers/lbaas'
+require 'openshift/load-balancer/models/lbaas'
 
 # Initialize the controller lazily, so we initialize it exactly zero
 # times if we never use it and exactly one time if we do use it.
@@ -33,8 +35,18 @@ class LazyLBController
   end
 
   def initialize
-    @lb_controller_class = OpenShift::F5LoadBalancerController
-    @lb_model_class = OpenShift::F5LoadBalancerModel
+    cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
+
+    case cfg['LOAD_BALANCER']
+    when 'lbaas'
+      @lb_controller_class = OpenShift::AsyncLoadBalancerController
+      @lb_model_class = OpenShift::LBaaSLoadBalancerModel
+    when 'f5'
+      @lb_controller_class = OpenShift::F5LoadBalancerController
+      @lb_model_class = OpenShift::F5LoadBalancerModel
+    else
+      raise StandardError.new 'No valid setting for LOAD_BALANCER was found in /etc/openshift/load-balancer.conf'
+    end
   end
 end
 
