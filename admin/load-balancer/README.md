@@ -3,7 +3,7 @@ Configuring ActiveMQ
 
 The ActiveMQ node routing plug-in must be enabled so that it sends routing
 updates that the programs in this directory can read.  Install
-rubygem-openshift-origin-node-plugin-activemq and see its included README.md for
+rubygem-openshift-origin-routing-activemq and see its included README.md for
 instructions.
 
 Configuring the Daemon
