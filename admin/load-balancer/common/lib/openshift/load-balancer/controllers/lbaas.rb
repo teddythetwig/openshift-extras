@@ -312,7 +312,7 @@ module OpenShift
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
         if status['status'] == 'COMPLETED'
-          throw Exception.new "Asked for status of job #{id}, load balancer returned status of job #{status['jobId']}" unless id == status['jobId']
+          raise Exception.new "Asked for status of job #{id}, load balancer returned status of job #{status['jobId']}" unless id == status['jobId']
 
           # TODO: validate that status['requestBody'] is consistent with op.
 
