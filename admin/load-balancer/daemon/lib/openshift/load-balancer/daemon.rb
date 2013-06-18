@@ -41,7 +41,7 @@ module OpenShift
         @lb_model_class = OpenShift::LBaaSLoadBalancerModel
         @lb_controller_class = OpenShift::LBaaSLoadBalancerController
       else
-        raise Exception.new 'No load-balancer configured.'
+        raise StandardError.new 'No load-balancer configured.'
       end
 
       @debug = cfg['DEBUG'] == 'true'
@@ -109,7 +109,7 @@ module OpenShift
     def create_application app_name, namespace
       pool_name = generate_pool_name app_name, namespace
 
-      raise Exception.new "Creating application #{app_name} for which a pool already exists" if @lb_controller.pools.include? pool_name
+      raise StandardError.new "Creating application #{app_name} for which a pool already exists" if @lb_controller.pools.include? pool_name
 
       $stderr.print "Creating new pool: #{pool_name}\n"
       @lb_controller.create_pool pool_name
@@ -123,7 +123,7 @@ module OpenShift
     def delete_application app_name, namespace
       pool_name = generate_pool_name app_name, namespace
 
-      raise Exception.new "Deleting application #{app_name} for which no pool exists" unless @lb_controller.pools.include? pool_name
+      raise StandardError.new "Deleting application #{app_name} for which no pool exists" unless @lb_controller.pools.include? pool_name
 
       route_name = generate_route_name app_name, namespace
       $stderr.print "Deleting routing rule: #{route_name}\n"

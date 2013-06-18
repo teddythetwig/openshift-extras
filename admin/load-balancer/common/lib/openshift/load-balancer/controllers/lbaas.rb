@@ -45,7 +45,7 @@ module OpenShift
       def add_member address, port
         member = address + ':' + port.to_s
 
-        raise Exception.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
+        raise LBControllerException.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
 
         # :add_pool_member blocks
         # if the corresponding pool is being created,
@@ -64,7 +64,7 @@ module OpenShift
       def delete_member address, port
         member = address + ':' + port.to_s
 
-        raise Exception.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
+        raise LBControllerException.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
 
         # :delete_pool_member blocks
         # if the corresponding pool is being created,
@@ -158,7 +158,7 @@ module OpenShift
     # that block the new Operation.  It is good practice to document how this
     # Array is computed for each invocation of queue_op.
     def queue_op newop, blocking_ops
-      raise Exception.new 'Got an operation with no type' unless newop.type
+      raise LBControllerException.new 'Got an operation with no type' unless newop.type
       newop.operands ||= []
       newop.blocked_on_cnt = blocking_ops.count
       newop.jobids ||= []
@@ -173,7 +173,7 @@ module OpenShift
     end
 
     def create_pool pool_name
-      raise Exception.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
+      raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
       # :create_pool blocks
       # if the corresponding pool is being deleted
@@ -188,9 +188,9 @@ module OpenShift
     end
 
     def delete_pool pool_name
-      raise Exception.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
 
-      raise Exception.new "Deleting pool that is already being deleted: #{pool_name}" if @ops.detect {|op| op.type == :delete_pool && op.operands == [pool_name]}
+      raise LBControllerException.new "Deleting pool that is already being deleted: #{pool_name}" if @ops.detect {|op| op.type == :delete_pool && op.operands == [pool_name]}
 
       # :delete_pool blocks
       # if the corresponding pool is being created,
@@ -217,9 +217,9 @@ module OpenShift
     end
 
     def create_route pool_name, route_name, path
-      raise Exception.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
 
-      raise Exception.new "Route already exists: #{route_name}" if @routes.include? route_name
+      raise LBControllerException.new "Route already exists: #{route_name}" if @routes.include? route_name
 
       # :create_route blocks
       # if the corresponding pool is being created.
@@ -232,9 +232,9 @@ module OpenShift
     end
 
     def delete_route pool_name, route_name
-      raise Exception.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
 
-      raise Exception.new "Route not found: #{route_name}" unless @routes.include? route_name
+      raise LBControllerException.new "Route not found: #{route_name}" unless @routes.include? route_name
 
       # :delete_route blocks
       # if the route is being created,
@@ -312,7 +312,7 @@ module OpenShift
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
         if status['status'] == 'COMPLETED'
-          raise Exception.new "Asked for status of job #{id}, load balancer returned status of job #{status['jobId']}" unless id == status['jobId']
+          raise LBControllerException.new "Asked for status of job #{id}, load balancer returned status of job #{status['jobId']}" unless id == status['jobId']
 
           # TODO: validate that status['requestBody'] is consistent with op.
 

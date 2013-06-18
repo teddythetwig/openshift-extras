@@ -36,7 +36,7 @@ module OpenShift
       # updated list of pool members to F5 BIG-IP.
       def add_member address, port
         member = address + ':' + port.to_s
-        raise Exception.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
+        raise LBControllerException.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
         @members.push member
         pending = [self.name, [address, port.to_s]]
         @lb_controller.pending_add_member_ops.push pending unless @lb_controller.pending_delete_member_ops.delete pending
@@ -47,7 +47,7 @@ module OpenShift
       # an update.
       def delete_member address, port
         member = address + ':' + port.to_s
-        raise Exception.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
+        raise LBControllerException.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
         @members.delete member
         pending = [self.name, [address, port.to_s]]
         @lb_controller.pending_delete_member_ops.push pending unless @lb_controller.pending_add_member_ops.delete pending
@@ -70,7 +70,7 @@ module OpenShift
     end
 
     def create_pool pool_name
-      raise Exception.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
+      raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
       @lb_model.create_pools [pool_name], [@bigip_monitor]
 
@@ -78,7 +78,7 @@ module OpenShift
     end
 
     def delete_pool pool_name
-      raise Exception.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
 
       update # in case we have pending delete operations for the pool.
 
@@ -88,7 +88,7 @@ module OpenShift
     end
 
     def create_route pool_name, profile_name, profile_path
-      raise Exception.new "Profile already exists: #{profile_name}" if @routes.include? profile_name
+      raise LBControllerException.new "Profile already exists: #{profile_name}" if @routes.include? profile_name
 
       @lb_model.create_route pool_name, profile_name, profile_path
 
@@ -97,7 +97,7 @@ module OpenShift
     end
 
     def delete_route pool_name, route_name
-      raise Exception.new "Profile not found: #{route_name}" unless @routes.include? route_name
+      raise LBControllerException.new "Profile not found: #{route_name}" unless @routes.include? route_name
 
       @lb_model.delete_route pool_name, route_name if @active_routes.include? route_name
 
