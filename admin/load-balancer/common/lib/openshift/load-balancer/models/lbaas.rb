@@ -115,9 +115,9 @@ module OpenShift
                                      (pool_names.zip member_lists).map do |pool_name, members| {
                                        :services => members.map do |address,port| {
                                          :ip => address,
-                                         :enabled => false,
+                                         :enabled => "false",
                                          :name => address + ':' + port.to_s,
-                                         :weight => 10,
+                                         :weight => "10",
                                          :port => port
                                        } end,
                                        :name => pool_name
