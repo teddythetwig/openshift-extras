@@ -10,6 +10,20 @@ module OpenShift
   # purpose is to hide REST calls behind a more convenient interface.
   class LBaaSLoadBalancerModel < LoadBalancerModel
 
+    # Parses the response from a RestClient request to LBaaS and returns an
+    # array of job ids.
+    # String -> [String]
+    def parse_jobids response
+      begin
+        JSON.parse(response)['Lb_Job_List']['jobIds']
+      rescue => e
+        $stderr.puts "Got exception parsing response: #{e.message}"
+        $stderr.puts "Backtrace: #{e.backtrace}"
+        $stderr.puts "Response: #{response}"
+        []
+      end
+    end
+
     # Returns [String] of pool names.
     def get_pool_names
       JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['tenantpools']['pools']
@@ -32,7 +46,7 @@ module OpenShift
                                 :'X-Auth-Token' => @keystone_token)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      parse_jobids response
     end
 
     # Returns [String] of job ids.
@@ -43,7 +57,7 @@ module OpenShift
                                    :'X-Auth-Token' => @keystone_token)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      parse_jobids response
     end
 
     # Returns [String] of route names.
@@ -70,7 +84,7 @@ module OpenShift
                                 :'X-Auth-Token' => @keystone_token)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      parse_jobids response
     end
 
     # Returns [String] of job ids.
@@ -81,7 +95,7 @@ module OpenShift
                                    :'X-Auth-Token' => @keystone_token)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      parse_jobids response
     end
 
     # Returns [String] of pool names.
@@ -112,7 +126,7 @@ module OpenShift
                                  :'X-Auth-Token' => @keystone_token)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
 
-      JSON.parse(response)['Lb_Job_List']['jobIds']
+      parse_jobids response
     end
 
     # Returns [String] of job ids.
@@ -123,7 +137,7 @@ module OpenShift
                                    :'X-Auth-Token' => @keystone_token)
       case response.code
       when 202
-        JSON.parse(response)['Lb_Job_List']['jobIds']
+        parse_jobids response
       when 204
         []
       else
