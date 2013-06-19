@@ -30,7 +30,9 @@ module OpenShift
     end
 
     # Returns [String] of job ids.
-    def create_pool pool_name, monitor_name='http'
+    def create_pool pool_name, monitor_name=nil
+      monitor_name ||= 'http'
+
       response = RestClient.put("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}",
                                 {
                                   :pool => {
