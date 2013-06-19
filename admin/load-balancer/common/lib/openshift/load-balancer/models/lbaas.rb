@@ -133,7 +133,7 @@ module OpenShift
 
     # Returns [String] of job ids.
     def delete_pool_member pool_name, address, port
-      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/services/#{address + ':' + port.to_s}",
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}/services/#{address + '%3a' + port.to_s}",
                                    :content_type => :json,
                                    :accept => :json,
                                    :'X-Auth-Token' => @keystone_token)
