@@ -258,7 +258,7 @@ module OpenShift
       # of job ids associated with such pools, and jobs that are waiting
       # on other jobs.  Note that order is preserved.
       # [Operation] -> [Operation]
-      ready_ops, @ops = @ops.partition {|op| op.jobids.empty? && op.blocked_on_cnt.zero?}
+      ready_ops = @ops.select {|op| op.jobids.empty? && op.blocked_on_cnt.zero?}
 
       # Take ready_ops and translate it into a hash where the keys are the pool
       # names and the values are Operation objects.  Note that the order in
