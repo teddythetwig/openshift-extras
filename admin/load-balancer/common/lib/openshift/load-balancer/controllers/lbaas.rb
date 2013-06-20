@@ -273,20 +273,7 @@ module OpenShift
       # Submit ready operations to the load balancer.
       # TODO: We can combine like operations.
       ready_ops.each do |op|
-        case op.type
-        when :create_pool
-          op.jobids = @lb_model.create_pool *op.operands
-        when :delete_pool
-          op.jobids = @lb_model.delete_pool *op.operands
-        when :create_route
-          op.jobids = @lb_model.create_route *op.operands
-        when :delete_route
-          op.jobids = @lb_model.delete_route *op.operands
-        when :add_pool_member
-          op.jobids = @lb_model.add_pool_member *op.operands
-        when :delete_pool_member
-          op.jobids = @lb_model.delete_pool_member *op.operands
-        end
+        op.jobids = @lb_model.send op.type, *op.operands
 
         # In case the operation generates no jobs and is immediately done, we
         # must reap it now because there will be no completion of a job to
