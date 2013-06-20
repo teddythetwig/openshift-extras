@@ -53,7 +53,7 @@ module OpenShift
         # if the pool member being added is the same as one that is being added
         #   (which can be the case if the same pool member is being added,
         #   deleted, and added again).
-        @lb_controller.queue_op Operation.new(:add_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include? op.type && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
+        @lb_controller.queue_op Operation.new(:add_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include?(op.type) && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
 
         @members.push member
       end
@@ -72,7 +72,7 @@ module OpenShift
         # if the pool member being deleted is the same as one that is being deleted
         #   (which can be the case if the same pool member is being added,
         #   deleted, added, and deleted again).
-        @lb_controller.queue_op Operation.new(:delete_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include? op.type && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
+        @lb_controller.queue_op Operation.new(:delete_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include?(op.type) && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
 
         @members.delete member
       end
@@ -211,7 +211,7 @@ module OpenShift
       #
       # The pool is not depended upon on by any other objects besides
       # routes and pool members 
-      queue_op Operation.new(:delete_pool, [pool_name]), @ops.select {|op| [:delete_route, :delete_pool_member, :create_pool].include? op.type && op.operands[0] == pool_name}
+      queue_op Operation.new(:delete_pool, [pool_name]), @ops.select {|op| [:delete_route, :delete_pool_member, :create_pool].include?(op.type) && op.operands[0] == pool_name}
 
       @pools.delete pool_name
     end
