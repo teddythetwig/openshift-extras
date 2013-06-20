@@ -102,7 +102,7 @@ module OpenShift
 
     # Returns [String] of pool names.
     def get_pool_members pool_name
-      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool']['services'] || []).map {|p| p['href'].scan(%r[/loadbalancers/[^/]+/pools/[^/]+/services/(.*)]).first.first}
+      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool']['services'] || []).map {|p| p['name']}
     end
 
     alias_method :get_active_pool_members, :get_pool_members
