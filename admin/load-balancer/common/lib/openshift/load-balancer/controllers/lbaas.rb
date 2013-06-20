@@ -172,6 +172,13 @@ module OpenShift
       @ops.delete op
     end
 
+    def reap_op_if_no_remaining_tasks op
+      if op.jobids.empty?
+        $stderr.puts "Deleting completed operation: #{op.type}(#{op.operands.join ', '})."
+        reap_op op
+      end
+    end
+
     def create_pool pool_name
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
@@ -274,11 +281,12 @@ module OpenShift
       # TODO: We can combine like operations.
       ready_ops.each do |op|
         op.jobids = @lb_model.send op.type, *op.operands
+        $stderr.puts "Submitted operation to LBaaS: #{op.type}(#{op.operands.join ', '}); got back jobids #{op.jobids.join ', '}."
 
         # In case the operation generates no jobs and is immediately done, we
         # must reap it now because there will be no completion of a job to
         # trigger the reaping.
-        reap_op op if op.jobids.empty?
+        reap_op_if_no_remaining_tasks op
       end
     end
 
@@ -303,8 +311,9 @@ module OpenShift
 
           # TODO: validate that status['requestBody'] is consistent with op.
 
+          $stderr.puts "LBaaS reports job #{id} completed."
           op.jobids.delete id
-          reap_op op if op.jobids.empty?
+          reap_op_if_no_remaining_tasks op
         end
       end
     end
