@@ -78,7 +78,7 @@ module OpenShift
                                 {
                                   :policy => {
                                     :name => route_name,
-                                    :rule => "when HTTP_REQUEST { if {[HTTP::path] starts_with \"#{path}\"} {pool #{pool_name}} else {pool #{@default_pool}}}"
+                                    :rule => "{when HTTP_REQUEST { if {[HTTP::path] starts_with \"#{path}\"} {pool #{pool_name}}}}"
                                   }
                                 }.to_json,
                                 :content_type => :json,
