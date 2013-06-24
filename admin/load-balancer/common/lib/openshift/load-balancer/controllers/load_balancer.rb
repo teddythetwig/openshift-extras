@@ -45,7 +45,7 @@ module OpenShift
     # @pools is a hash that maps String to LoadBalancerPool.
     attr_reader :pools
 
-    def create_pool pool_name
+    def create_pool pool_name, monitor_name=nil
     end
 
     def delete_pool pool_name

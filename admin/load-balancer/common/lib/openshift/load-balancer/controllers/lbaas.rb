@@ -145,7 +145,6 @@ module OpenShift
       @lbaas_username = cfg['LBAAS_USERNAME'] || 'admin'
       @lbaas_password = cfg['LBAAS_PASSWORD'] || 'passwd'
       @lbaas_tenant = cfg['LBAAS_TENANT'] || 'lbms'
-      @lbaas_monitor = cfg['LBAAS_MONITOR']
 
       @debug = cfg['DEBUG'] == 'true'
     end
@@ -179,7 +178,7 @@ module OpenShift
       end
     end
 
-    def create_pool pool_name
+    def create_pool pool_name, monitor_name=nil
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
       # :create_pool blocks
@@ -189,7 +188,7 @@ module OpenShift
       # The pool does not depend on any other objects; we must ensure
       # only that we are not creating a pool at the same time that we
       # are deleting pool of the same name.
-      queue_op Operation.new(:create_pool, [pool_name, @lbaas_monitor]), @ops.select {|op| op.type == :delete_pool && op.operands[0] == pool_name}
+      queue_op Operation.new(:create_pool, [pool_name, monitor_name]), @ops.select {|op| op.type == :delete_pool && op.operands[0] == pool_name}
 
       @pools[pool_name] = Pool.new self, @lb_model, pool_name, false
     end

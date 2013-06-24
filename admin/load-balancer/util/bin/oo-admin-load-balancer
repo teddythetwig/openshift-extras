@@ -79,9 +79,14 @@ argvs.each do |argv|
       puts lb.pools.map{|k,v|"  #{k} (#{v.members.length} members)\n"}.join
 
     when 'add-pool'
-      raise ArgumentError.new "Requires a pool name." unless 1 == argv.count
-      puts "Adding pool #{argv[0]}."
-      lb.create_pool argv[0]
+      raise ArgumentError.new "Requires a pool name." unless 1 == argv.count || 2 == argv.count
+      if 1 == argv.count
+        puts "Adding pool #{argv[0]}."
+        lb.create_pool argv[0]
+      else
+        puts "Adding pool #{argv[0]} with monitor #{argv[1]}."
+        lb.create_pool *argv
+      end
 
     when 'delete-pool'
       raise ArgumentError.new "Requires a pool name." unless 1 == argv.count
@@ -129,7 +134,7 @@ argvs.each do |argv|
       lb.pools[argv[0]].delete_member *argv[1].split(':')
 
     else
-      raise ArgumentError.new "Usage: #{$0} {list-pools|add-pool <name>|delete-pool <name>|list-routes|add-route <pool> <name> <path>|delete-route <pool> <route_name>|list-pool-members <pool>|add-pool-member <pool> <host>:<port>|delete-pool-member <pool> <host>:<port>}"
+      raise ArgumentError.new "Usage: #{$0} {list-pools|add-pool <name> [<monitor-name>]|delete-pool <name>|list-routes|add-route <pool> <name> <path>|delete-route <pool> <route_name>|list-pool-members <pool>|add-pool-member <pool> <host>:<port>|delete-pool-member <pool> <host>:<port>}"
     end
 
   rescue => e

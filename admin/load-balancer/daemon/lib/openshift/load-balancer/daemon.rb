@@ -29,6 +29,7 @@ module OpenShift
       @host = cfg['ACTIVEMQ_HOST'] || 'activemq.example.com'
       @port = (cfg['ACTIVEMQ_PORT'] || 61613).to_i
       @destination = cfg['ACTIVEMQ_TOPIC'] || '/topic/routinginfo'
+      @monitor_name = cfg['MONITOR_NAME']
 
       @update_interval = (cfg['UPDATE_INTERVAL'] || 5).to_i
 
@@ -119,7 +120,7 @@ module OpenShift
       raise StandardError.new "Creating application #{app_name} for which a pool already exists" if @lb_controller.pools.include? pool_name
 
       $stderr.print "Creating new pool: #{pool_name}\n"
-      @lb_controller.create_pool pool_name
+      @lb_controller.create_pool pool_name, monitor_name
 
       route_name = generate_route_name app_name, namespace
       route = '/' + app_name

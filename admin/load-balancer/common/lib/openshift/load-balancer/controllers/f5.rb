@@ -64,15 +64,14 @@ module OpenShift
       @bigip_host = cfg['BIGIP_HOST'] || '127.0.0.1'
       @bigip_username = cfg['BIGIP_USERNAME'] || 'admin'
       @bigip_password = cfg['BIGIP_PASSWORD'] || 'passwd'
-      @bigip_monitor = cfg['BIGIP_MONITOR']
 
       @debug = cfg['DEBUG'] == 'true'
     end
 
-    def create_pool pool_name
+    def create_pool pool_name, monitor_name=nil
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
-      @lb_model.create_pools [pool_name], [@bigip_monitor]
+      @lb_model.create_pools [pool_name], [monitor_name]
 
       @pools[pool_name] = Pool.new self, @lb_model, pool_name
     end
