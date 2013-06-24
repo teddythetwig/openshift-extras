@@ -78,7 +78,7 @@ module OpenShift
                                 {
                                   :policy => {
                                     :name => route_name,
-                                    :rule => "{when HTTP_REQUEST { if {[HTTP::path] starts_with \"#{path}\"} {pool #{pool_name}}}}"
+                                    :rule => "{ when HTTP_REQUEST { if { [HTTP::uri] contains \"/webapps#{path}\" } { if { [string first -nocase \"/webapps\" [HTTP::uri]] == 3 } { scan [HTTP::uri] {/%[^/]%s} country final_uri; HTTP::header insert SPARTA_PRE_APP_CONTEXT $country; HTTP::uri $final_uri; }; pool #{pool_name}; } } }"
                                   }
                                 }.to_json,
                                 :content_type => :json,
