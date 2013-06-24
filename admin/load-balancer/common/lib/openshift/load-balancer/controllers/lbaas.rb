@@ -321,7 +321,7 @@ module OpenShift
       # [Operation] -> [Operation]
 
       jobs = submitted_ops.map {|op| op.jobids.map {|id| [op,id]}}.flatten(1)
-      # [Operation] -> [[id,Operation]]
+      # [Operation] -> [[Operation,String]]
 
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
