@@ -135,7 +135,7 @@ module OpenShift
     # field of Operand.
 
     attr_reader :ops # [Operation]
-    attr_reader :routes, :active_routes
+    attr_reader :routes, :active_routes, :monitors
 
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
@@ -252,6 +252,26 @@ module OpenShift
       @routes.delete route_name
     end
 
+    def create_monitor monitor_name, path, up_code
+      raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
+
+      # :create_monitor blocks
+      # if a monitor of the same name is currently being deleted.
+      queue_op Operation.new(:create_monitor, [monitor_name, path, up_code]), @ops.select {|op| op.type == :delete_monitor_pool && op.operands[0] == monitor_name}
+
+      @monitors.push monitor_name
+    end
+
+    def delete_monitor monitor_name
+      raise LBControllerException.new "Monitor not found: #{monitor_name}" unless @monitors.include? monitor_name
+
+      # :delete_monitor blocks
+      # if the monitor is being created.
+      queue_op Operation.new(:delete_monitor, [pool_name, route_name]), @ops.select {|op| op.type == :create_monitor && op.operands[0] == monitor_name}
+
+      @monitors.delete monitor_name
+    end
+
     # Update the load balancer with any queued updates.
     def update
       # Check whether any previously submitted operations have completed.
@@ -330,6 +350,9 @@ module OpenShift
 
       # If the route is already created or is being created in the load balancer, it will be in @routes.
       @routes = @lb_model.get_active_route_names
+
+      # If the monitor is already created or is being created in the load balancer, it will be in @monitors.
+      @monitors = @lb_model.get_monitor_names
 
       # If an Operation has been created but not yet completed (whether
       # because it is blocked on one or more other Operations, because

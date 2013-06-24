@@ -64,6 +64,18 @@ module OpenShift
       (pool_names.zip route_names).map {|pool,route| delete_route pool, route}.flatten 1
     end
 
+    # get_monitor_names :: [String]
+    def get_monitor_names
+    end
+
+    # create_monitor :: String, String, String, String -> undefined
+    def create_monitor monitor_name, path, up_code
+    end
+
+    # delete_monitor :: String -> undefined
+    def delete_monitor monitor_name
+    end
+
     # get_pool_members :: String -> [String]
     def get_pool_members pool_name
     end

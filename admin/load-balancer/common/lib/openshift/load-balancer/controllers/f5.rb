@@ -24,7 +24,7 @@ module OpenShift
     # address:port to represent each pool member.
     #
     class Pool < LoadBalancerController::Pool
-      attr_reader :members, :name
+      attr_reader :members, :name, :monitors
 
       def initialize lb_controller, lb_model, pool_name
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
@@ -104,6 +104,22 @@ module OpenShift
       @active_routes.delete route_name
     end
 
+    def create_monitor monitor_name, path, up_code
+      raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
+
+      @lb_model.create_monitor monitor_name, path
+
+      @monitors.push monitor_name
+    end
+
+    def delete_monitor monitor_name
+      raise LBControllerException.new "Monitor not found: #{monitor_name}" unless @monitors.include? monitor_name
+
+      @lb_model.delete_monitor monitor_name if @monitors.include? monitor_name
+
+      @monitors.delete monitor_name
+    end
+
     def update
       adds = @pending_add_member_ops.inject(Hash.new {Array.new}) {|h,(k,v)| h[k] = h[k].push v; h}
       dels = @pending_delete_member_ops.inject(Hash.new {Array.new}) {|h,(k,v)| h[k] = h[k].push v; h}
@@ -123,6 +139,7 @@ module OpenShift
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
       @routes = @lb_model.get_route_names
       @active_routes = @lb_model.get_active_route_names
+      @monitors = @lb_model.get_monitor_names
 
       @pending_add_member_ops = []
       @pending_delete_member_ops = []

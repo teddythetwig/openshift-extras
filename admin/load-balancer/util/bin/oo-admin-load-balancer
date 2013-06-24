@@ -116,6 +116,23 @@ argvs.each do |argv|
       puts "Deleting route #{argv[1]} from pool #{argv[0]}."
       lb.delete_route *argv
 
+    when 'list-monitors'
+      raise ArgumentError.new "Requires no arguments." unless argv.empty?
+      puts 'Listing monitors.'
+      puts lb.monitors.join "\n"
+      # TODO: Extend the LoadBalancerController class with a method that
+      # provides additional information about monitors.
+
+    when 'create-monitor'
+      raise ArgumentError.new "Requires a monitor name, path, and \"up\" code." unless 3 == argv.length
+      puts "Adding monitor #{argv[0]} for path #{argv[1]} with \"up\" code \"#{argv[2]}\"."
+      lb.create_monitor *argv
+
+    when 'delete-monitor'
+      raise ArgumentError.new "Requires a pool name." unless 1 == argv.length
+      puts "Deleting monitor #{argv[0]}."
+      lb.delete_monitor *argv
+
     when 'list-pool-members'
       raise ArgumentError.new "Requires a pool name." unless 1 == argv.length
       puts "Listing pool members for pool #{argv[0]}."
@@ -134,7 +151,7 @@ argvs.each do |argv|
       lb.pools[argv[0]].delete_member *argv[1].split(':')
 
     else
-      raise ArgumentError.new "Usage: #{$0} {list-pools|add-pool <name> [<monitor-name>]|delete-pool <name>|list-routes|add-route <pool> <name> <path>|delete-route <pool> <route_name>|list-pool-members <pool>|add-pool-member <pool> <host>:<port>|delete-pool-member <pool> <host>:<port>}"
+      raise ArgumentError.new "Usage: #{$0} {list-pools|add-pool <name> [<monitor-name>]|delete-pool <name>|list-routes|add-route <pool> <name> <path>|delete-route <pool> <route_name>|list-monitors|create-monitor <name> <path> <up-code>|delete-monitor <name>list-pool-members <pool>|add-pool-member <pool> <host>:<port>|delete-pool-member <pool> <host>:<port>}"
     end
 
   rescue => e

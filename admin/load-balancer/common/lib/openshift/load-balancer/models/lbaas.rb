@@ -100,6 +100,44 @@ module OpenShift
       parse_jobids response
     end
 
+    # Returns [String] of monitor names.
+    def get_monitor_names
+      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)) || []).map {|m| m['name']}
+    end
+
+    # Returns [String] of job ids.
+    def create_monitor monitor_name, path, up_code
+      response = RestClient.put("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/#{monitor_name}",
+                                {
+                                  :monitor => {
+                                    :name => monitor_name,
+                                    :type => 'HTTP-ECV',
+                                    :send => "GET #{path}",
+                                    :rcv => up_code,
+                                    :interval => '30',
+                                    :timeout => '30',
+                                    :downtime => '12'
+                                  }
+                                }.to_json,
+                                :content_type => :json,
+                                :accept => :json,
+                                :'X-Auth-Token' => @keystone_token)
+      raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
+
+      parse_jobids response
+    end
+
+    # Returns [String] of job ids.
+    def delete_monitor monitor_name
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/#{monitor_name}",
+                                   :content_type => :json,
+                                   :accept => :json,
+                                   :'X-Auth-Token' => @keystone_token)
+      raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
+
+      parse_jobids response
+    end
+
     # Returns [String] of pool names.
     def get_pool_members pool_name
       (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool']['services'] || []).map {|p| p['name']}

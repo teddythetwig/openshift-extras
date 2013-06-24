@@ -43,6 +43,21 @@ module OpenShift
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
 
+    def get_monitor_names
+      puts "get monitor names"
+      [] # Return an array of String representing monitors.
+    end
+
+    def create_monitor monitor_name, path, up_code
+      puts "create monitor #{monitor_name} using path #{path} where '#{up_code}' means up"
+      [] # If using AsyncLoadBalancerController, return an array of jobids.
+    end
+
+    def delete_monitor monitor_name
+      puts "delete monitor #{monitor_name}"
+      [] # If using AsyncLoadBalancerController, return an array of jobids.
+    end
+
     def get_pool_members pool_name
       puts "get members of pool #{pool_name}"
       [] # Return an array of String representing pool members.

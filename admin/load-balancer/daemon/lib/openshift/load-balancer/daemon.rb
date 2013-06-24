@@ -29,7 +29,8 @@ module OpenShift
       @host = cfg['ACTIVEMQ_HOST'] || 'activemq.example.com'
       @port = (cfg['ACTIVEMQ_PORT'] || 61613).to_i
       @destination = cfg['ACTIVEMQ_TOPIC'] || '/topic/routinginfo'
-      @monitor_name = cfg['MONITOR_NAME']
+      @monitor_name_format = cfg['MONITOR_NAME']
+      @monitor_path_format = cfg['MONITOR_PATH']
 
       @update_interval = (cfg['UPDATE_INTERVAL'] || 5).to_i
 
@@ -114,10 +115,31 @@ module OpenShift
       "/Common/ose-#{app_name}-#{namespace}"
     end
 
+    def generate_monitor_name app_name, namespace
+      return nil unless @monitor_name_format
+
+      @monitor_name_format.gsub /%./, '%a' => app_name, '%n' => namespace
+    end
+
+    def generate_monitor_path app_name, namespace
+      return nil unless @monitor_path_format
+
+      @monitor_path_format.gsub /%./, '%a' => app_name, '%n' => namespace
+    end
+
     def create_application app_name, namespace
       pool_name = generate_pool_name app_name, namespace
 
       raise StandardError.new "Creating application #{app_name} for which a pool already exists" if @lb_controller.pools.include? pool_name
+
+      monitor_name = generate_monitor_name app_name, namespace
+      if @lb_controller.monitors.include? monitor_name
+        $stderr.print "Using existing monitor: #{monitor_name}"
+      else
+        monitor_path = generate_monitor_path app_name, namespace
+        $stderr.print "Creating new monitor #{monitor_name} with path #{monitor_path}\n"
+        @lb_controller.create_monitor monitor_name, monitor_path, 'UP'
+      end
 
       $stderr.print "Creating new pool: #{pool_name}\n"
       @lb_controller.create_pool pool_name, monitor_name

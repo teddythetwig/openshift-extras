@@ -65,6 +65,19 @@ module OpenShift
       @bigip['LocalLB.ProfileHttpClass'].delete_profile route_names
     end
 
+    def get_monitor_names
+      @bigip['LocalLB.Monitor'].get_template_list.map {|template| template.template_name}
+    end
+
+    def create_monitor monitor_name, path, up_code
+      @bigip['LocalLB.Monitor'].create_template({:templates=>[{:parent_template=>'http', :interval=>30, :timeout=>30, :dest_ipport=>ipport, :is_read_only=>true, :is_directly_usable=>true}], :template_attributes=>[{:template_name=>monitor_name, :template_type=>'TTYPE_HTTP'}]})
+      @bigip['LocalLB.Monitor'].set_template_string_property({:template_names=>[monitor_name], :values=>[{:type=>'STYPE_GET', :value=>"GET #{path}"}, {:type=>'STYPE_RECEIVE', :value=>up_code}]})
+    end
+
+    def delete_monitor monitor_name
+      @bigip['LocalLB.Monitor'].delete_template [monitor_name]
+    end
+
     def get_pool_members pool_name
       @bigip['LocalLB.Pool'].get_member([pool_name])[0].collect do |pool_member|
           pool_member['address'] + ':' + pool_member['port'].to_s
@@ -83,7 +96,7 @@ module OpenShift
 
     def authenticate host=@host, user=@user, passwd=@passwd
       @bigip = F5::IControl.new(host, user, passwd,
-                                ['System.Session', 'LocalLB.Pool', 'LocalLB.VirtualServer', 'LocalLB.ProfileHttpClass']).get_interfaces
+                                ['System.Session', 'LocalLB.Pool', 'LocalLB.VirtualServer', 'LocalLB.ProfileHttpClass', 'LocalLB.Monitor']).get_interfaces
     end
 
   end
