@@ -104,7 +104,12 @@ module OpenShift
 
     def update
       @last_update = Time.now
-      @lb_controller.update
+      begin
+        @lb_controller.update
+      rescue => e
+        $stderr.puts "Got an exception: #{e.message}"
+        $stderr.puts "Backtrace: #{e.backtrace}"
+      end
     end
 
     def generate_pool_name app_name, namespace
