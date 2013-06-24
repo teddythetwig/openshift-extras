@@ -140,7 +140,13 @@ module OpenShift
 
     # Returns [String] of pool names.
     def get_pool_members pool_name
-      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool']['services'] || []).map {|p| p['name']}
+      begin
+        (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['pool']['services'] || []).map {|p| p['name']}
+      rescue => e
+        $stderr.puts "Got exception while getting pool members: #{e.message}"
+        $stderr.puts 'Backtrace:', e.backtrace
+        []
+      end
     end
 
     alias_method :get_active_pool_members, :get_pool_members
