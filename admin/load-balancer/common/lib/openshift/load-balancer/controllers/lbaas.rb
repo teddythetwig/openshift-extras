@@ -182,13 +182,14 @@ module OpenShift
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
       # :create_pool blocks
+      # if the corresponding monitor is being created or
       # if the corresponding pool is being deleted
       #   (which can be the case if the same pool is being added, deleted, and added again).
       #
       # The pool does not depend on any other objects; we must ensure
       # only that we are not creating a pool at the same time that we
       # are deleting pool of the same name.
-      queue_op Operation.new(:create_pool, [pool_name, monitor_name]), @ops.select {|op| op.type == :delete_pool && op.operands[0] == pool_name}
+      queue_op Operation.new(:create_pool, [pool_name, monitor_name]), @ops.select {|op| (op.type == :delete_pool && op.operands[0] == pool_name) || (op.type == :create_monitor && op.operands[0] == monitor_name)}
 
       @pools[pool_name] = Pool.new self, @lb_model, pool_name, false
     end
