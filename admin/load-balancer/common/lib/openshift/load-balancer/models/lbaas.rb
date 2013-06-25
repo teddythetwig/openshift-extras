@@ -102,7 +102,7 @@ module OpenShift
 
     # Returns [String] of monitor names.
     def get_monitor_names
-      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token)) || []).map {|m| m['name']}
+      (JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['monitor'] || []).map {|m| m['name']}
     end
 
     # Returns [String] of job ids.
