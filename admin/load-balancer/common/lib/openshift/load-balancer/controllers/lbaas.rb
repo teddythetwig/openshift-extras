@@ -178,6 +178,12 @@ module OpenShift
       end
     end
 
+    def cancel_op op
+      op.blocked_ops.each {|op| cancel_op op}
+      $stderr.puts "Cancelling operation: #{op.type})(#{op.operands.join ', '})."
+      @ops.delete op
+    end
+
     def create_pool pool_name, monitor_name=nil
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
@@ -326,7 +332,10 @@ module OpenShift
 
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
-        if status['Tenant_Job_Details']['status'] == 'COMPLETED'
+        case status['Tenant_Job_Details']['status']
+        when 'PENDING'
+          # Nothing to do but wait some more.
+        when 'COMPLETED'
           raise LBControllerException.new "Asked for status of job #{id}, load balancer returned status of job #{status['Tenant_Job_Details']['jobId']}" unless id == status['Tenant_Job_Details']['jobId']
 
           # TODO: validate that status['requestBody'] is consistent with op.
@@ -334,6 +343,14 @@ module OpenShift
           $stderr.puts "LBaaS reports job #{id} completed."
           op.jobids.delete id
           reap_op_if_no_remaining_tasks op
+        when 'FAILED'
+          $stderr.puts "LBaaS reports that job #{id} failed.  Cancelling associated operation and any operations that it blocks..."
+
+          cancel_op op
+
+          $stderr.puts "Done."
+        else
+          raise LBControllerException.new "Got unknown status #{status['Tenant_Job_Details']['status']} for status job #{id}."
         end
       end
     end
