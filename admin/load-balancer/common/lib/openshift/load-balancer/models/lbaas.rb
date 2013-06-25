@@ -115,7 +115,7 @@ module OpenShift
                                     :send => "GET #{path}",
                                     :rcv => up_code,
                                     :interval => '30',
-                                    :timeout => '30',
+                                    :timeout => '5',
                                     :downtime => '12'
                                   }
                                 }.to_json,
