@@ -113,11 +113,11 @@ module OpenShift
     end
 
     def generate_pool_name app_name, namespace
-      "ose_#{app_name}_#{namespace}_80"
+      "pool_ose_#{app_name}_#{namespace}_80"
     end
 
     def generate_route_name app_name, namespace
-      "ose_#{app_name}_#{namespace}"
+      "irule_ose_#{app_name}_#{namespace}"
     end
 
     def generate_monitor_name app_name, namespace
