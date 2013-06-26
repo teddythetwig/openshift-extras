@@ -39,7 +39,7 @@ module OpenShift
                                     :name => pool_name,
                                     :method => 'LeastConnection',
                                     :port => '80',
-                                    :enabled => false,
+                                    :enabled => 'true',
                                     :monitors => [monitor_name]
                                   }
                                 }.to_json,
@@ -159,7 +159,7 @@ module OpenShift
                                      (pool_names.zip member_lists).map do |pool_name, members| {
                                        :services => members.map do |address,port| {
                                          :ip => address,
-                                         :enabled => "false",
+                                         :enabled => 'true',
                                          :name => address + ':' + port.to_s,
                                          :weight => "10",
                                          :port => port
