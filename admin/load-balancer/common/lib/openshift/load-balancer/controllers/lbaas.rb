@@ -146,6 +146,8 @@ module OpenShift
       @lbaas_password = cfg['LBAAS_PASSWORD'] || 'passwd'
       @lbaas_tenant = cfg['LBAAS_TENANT'] || 'lbms'
 
+      @virtual_server_name = cfg['VIRTUAL_SERVER']
+
       @debug = cfg['DEBUG'] == 'true'
     end
 
@@ -241,6 +243,9 @@ module OpenShift
       # it is sufficient to check just for :create_pool.
       queue_op Operation.new(:create_route, [pool_name, route_name, path]), @ops.select {|op| op.type == :create_pool && op.operands[0] == pool_name}
 
+      # :attach_route blocks on the :create_route operation we just queued.
+      queue_op Operation.new(:attach_route, [route_name, @virtual_server_name]), @ops.select {|op| op.type == :create_route && op.operands[1] == route_name} if @virtual_server_name
+
       @routes.push route_name
     end
 
@@ -249,12 +254,19 @@ module OpenShift
 
       raise LBControllerException.new "Route not found: #{route_name}" unless @routes.include? route_name
 
+      # :detach_route blocks
+      # if the route is being attached, or
+      # if the route is being detached
+      #   (which can be the case if the same route is being created, attached, detached, deleted, created, attached, and detached).
+      queue_op Operation.new(:detach_route, [route_name, @virtual_server_name]), @ops.select {|op| [:attach_route, :detach_route].include?(op.type) && op.operands[0] == route_name} if @virtual_server_name
+
       # :delete_route blocks
+      # if the route is being detached,
       # if the route is being created,
       # if the corresponding pool is being created, or
       # if the route is being deleted
       #   (which can be the case if the same pool and route are being created, deleted, created, and deleted again).
-      queue_op Operation.new(:delete_route, [pool_name, route_name]), @ops.select {|op| (op.type == :create_pool && op.operands[0] == pool_name) || (op.type == :create_route && op.operands[0] == pool_name && op.operands[1] == route_name)}
+      queue_op Operation.new(:delete_route, [pool_name, route_name]), @ops.select {|op| (op.type == :detach_route && op.operands[0] == route_name) || (op.type == :create_pool && op.operands[0] == pool_name) || (op.type == :create_route && op.operands[0] == pool_name && op.operands[1] == route_name)}
 
       @routes.delete route_name
     end

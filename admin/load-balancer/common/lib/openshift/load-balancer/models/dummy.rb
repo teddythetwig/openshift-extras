@@ -38,6 +38,16 @@ module OpenShift
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
 
+    def attach_route route_name, virtual_server_name
+      puts "attach route #{route_name} to virtual server #{virtual_server_name}"
+      [] # If using AsyncLoadBalancerController, return an array of jobids.
+    end
+
+    def detach_route route_name, virtual_server_name
+      puts "detach route #{route_name} from virtual server #{virtual_server_name}"
+      [] # If using AsyncLoadBalancerController, return an array of jobids.
+    end
+
     def delete_route pool_name, route_name
       puts "delete route #{route_name} associated with pool #{pool_name}"
       [] # If using AsyncLoadBalancerController, return an array of jobids.

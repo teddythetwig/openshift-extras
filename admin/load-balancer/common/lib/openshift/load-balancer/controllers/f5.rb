@@ -65,6 +65,8 @@ module OpenShift
       @bigip_username = cfg['BIGIP_USERNAME'] || 'admin'
       @bigip_password = cfg['BIGIP_PASSWORD'] || 'passwd'
 
+      @virtual_server_name = cfg['VIRTUAL_SERVER']
+
       @debug = cfg['DEBUG'] == 'true'
     end
 
@@ -90,6 +92,7 @@ module OpenShift
       raise LBControllerException.new "Profile already exists: #{profile_name}" if @routes.include? profile_name
 
       @lb_model.create_route pool_name, profile_name, profile_path
+      @lb_model.attach_route profile_name, @virtual_server_name if @virtual_server_name
 
       @routes.push profile_name
       @active_routes.push profile_name
@@ -98,6 +101,7 @@ module OpenShift
     def delete_route pool_name, route_name
       raise LBControllerException.new "Profile not found: #{route_name}" unless @routes.include? route_name
 
+      @lb_model.detach_route route_name, @virtual_server_name if @virtual_server_name
       @lb_model.delete_route pool_name, route_name if @active_routes.include? route_name
 
       @routes.delete route_name

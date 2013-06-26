@@ -57,11 +57,17 @@ module OpenShift
       @bigip['LocalLB.ProfileHttpClass'].add_path_match_pattern route_names.map {|name| "/Common/#{name}"}, paths.map {|path| [{:pattern=>"#{path}(/.*)?", :is_glob=>false}]}
       @bigip['LocalLB.ProfileHttpClass'].set_pool_name route_names.map {|name| "/Common/#{name}"}, pool_names.map{|name| {:value=>"/Common/#{name}", :default_flag=>false}}
       @bigip['LocalLB.ProfileHttpClass'].set_rewrite_url route_names.map {|name| "/Common/#{name}"}, paths.map{|path| {:value=>"[string map { \"#{path}\" \"/\" } [HTTP::uri]]", :default_flag=>false}}
-      @bigip['LocalLB.VirtualServer'].add_httpclass_profile ['ose-vlan'], [route_names.map {|name| {:profile_name=>"/Common/#{name}", :priority=>(priority += 1)}}]
+    end
+
+    def attach_routes route_names, virtual_server_names
+      @bigip['LocalLB.VirtualServer'].add_httpclass_profile virtual_server_names, [route_names.map {|name| {:profile_name=>"/Common/#{name}", :priority=>(priority += 1)}}]
+    end
+
+    def detach_routes route_names, virtual_server_names
+      @bigip['LocalLB.VirtualServer'].remove_httpclass_profile virtual_server_names, [route_names.map {|n| {:profile_name=>"/Common/#{n}", :priority=>0}}]
     end
 
     def delete_routes pool_names, route_names
-      @bigip['LocalLB.VirtualServer'].remove_httpclass_profile ['ose-vlan'], [route_names.map {|n| {:profile_name=>"/Common/#{n}", :priority=>0}}]
       @bigip['LocalLB.ProfileHttpClass'].delete_profile route_names.map {|name| "/Common/#{name}"}
     end
 

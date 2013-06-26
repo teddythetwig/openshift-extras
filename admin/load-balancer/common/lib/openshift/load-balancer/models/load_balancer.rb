@@ -52,6 +52,26 @@ module OpenShift
       (pool_names.zip routes).map {|pool,(route,path)| create_route pool, route, path}.flatten 1
     end
 
+    # attach_route :: String, String -> undefined
+    # Note: At least one of attach_route and attach_routes must be implemented.
+    def attach_route route_name, virtual_server_name
+      attach_routes [route_name], [virtual_server_name]
+    end
+
+    # attach_routes :: [String], [String] -> undefined
+    # Note: At least one of attach_route and attach_routes must be implemented.
+    def attach_routes route_names, virtual_server_names
+      (route_names.zip virtual_server_names).map {|route_name, virtual_server_name| attach_route route_name, virtual_server_name}.flatten 1
+    end
+
+    def detach_route route_name, virtual_server_name
+      detach_routes [route_name], [virtual_server_name]
+    end
+
+    def detach_routes route_names, virtual_server_names
+      (route_names.zip virtual_server_names).map {|route_name, virtual_server_name| detach_route route_name, virtual_server_name}.flatten 1
+    end
+
     # delete_route :: String, String -> undefined
     # Note: At least one of delete_route and delete_routes must be implemented.
     def delete_route pool_name, route_name
