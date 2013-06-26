@@ -249,8 +249,6 @@ module OpenShift
 
     def initialize host, user=nil, passwd=nil, tenant=nil
       @host, @user, @passwd, @tenant = host, user, passwd, tenant
-      @default_pool = 'foo-443'
-      # XXX: Dehardcode @default_pool.
     end
 
   end
