@@ -143,7 +143,7 @@ module OpenShift
       else
         monitor_path = generate_monitor_path app_name, namespace
         $stderr.print "Creating new monitor #{monitor_name} with path #{monitor_path}\n"
-        @lb_controller.create_monitor monitor_name, monitor_path, 'UP'
+        @lb_controller.create_monitor monitor_name, monitor_path, '1'
       end
 
       $stderr.print "Creating new pool: #{pool_name}\n"
