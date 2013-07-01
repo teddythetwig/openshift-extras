@@ -318,8 +318,20 @@ module OpenShift
       # Submit ready operations to the load balancer.
       # TODO: We can combine like operations.
       ready_ops.each do |op|
-        op.jobids = @lb_model.send op.type, *op.operands
-        $stderr.puts "Submitted operation to LBaaS: #{op.type}(#{op.operands.join ', '}); got back jobids #{op.jobids.join ', '}."
+        begin
+          $stderr.puts "Submitting operation to LBaaS: #{op.type}(#{op.operands.join ', '})."
+          op.jobids = @lb_model.send op.type, *op.operands
+          $stderr.puts "Got back jobids #{op.jobids.join ', '}."
+        rescue => e
+          $stderr.puts "Got exception: #{e.message}"
+          $stderr.puts 'Backtrace:', e.backtrace
+
+          $stderr.puts "Cancelling the operation and any operations that it blocks..."
+
+          cancel_op op
+
+          $stderr.puts "Done."
+        end
 
         # In case the operation generates no jobs and is immediately done, we
         # must reap it now because there will be no completion of a job to
