@@ -52,7 +52,6 @@ module OpenShift
 
     def create_routes pool_names, routes
       route_names, paths = routes.transpose
-      priority = @bigip['LocalLB.VirtualServer'].get_httpclass_profile(['ose-vlan'])[0].map{|pri| pri.priority}.max || 0
       @bigip['LocalLB.ProfileHttpClass'].create route_names.map {|name| "/Common/#{name}"}
       @bigip['LocalLB.ProfileHttpClass'].add_path_match_pattern route_names.map {|name| "/Common/#{name}"}, paths.map {|path| [{:pattern=>"#{path}(/.*)?", :is_glob=>false}]}
       @bigip['LocalLB.ProfileHttpClass'].set_pool_name route_names.map {|name| "/Common/#{name}"}, pool_names.map{|name| {:value=>"/Common/#{name}", :default_flag=>false}}
@@ -60,6 +59,7 @@ module OpenShift
     end
 
     def attach_routes route_names, virtual_server_names
+      priority = @bigip['LocalLB.VirtualServer'].get_httpclass_profile(['ose-vlan'])[0].map{|pri| pri.priority}.max || 0
       @bigip['LocalLB.VirtualServer'].add_httpclass_profile virtual_server_names, [route_names.map {|name| {:profile_name=>"/Common/#{name}", :priority=>(priority += 1)}}]
     end
 
