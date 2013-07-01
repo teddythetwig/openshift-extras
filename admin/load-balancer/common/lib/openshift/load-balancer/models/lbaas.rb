@@ -93,13 +93,9 @@ module OpenShift
       # LBaaS supports adding multiple routes at once, but only to one virtual
       # server at a time.
       (virtual_server_names.zip route_names).group_by {|v,r| v}.map do |v,r|
-        response = RestClient.post("http://#{@host}/loadbalancers/tenant/#{@tenant}/vips/#{v}",
+        response = RestClient.post("http://#{@host}/loadbalancers/tenant/#{@tenant}/vips/#{v}/policies",
                                    {
-                                     :vip => {
-                                       :name => v,
-                                       :enabled => 'true',
-                                       :policies => r.map {|v,r| {:name => r}}
-                                     }
+                                     :policies => r.map {|v,r| {:name => r}}
                                    }.to_json,
                                    :content_type => :json,
                                    :accept => :json,
@@ -110,7 +106,14 @@ module OpenShift
       end.flatten 1
     end
 
-    def detach_routes route_names, virtual_server_names
+    def detach_route route_name, virtual_server_name
+      response = RestClient.delete("http://#{@host}/loadbalancers/tenant/#{@tenant}/vips/#{virtual_server_name}/policies/#{route_name}",
+                                   :content_type => :json,
+                                   :accept => :json,
+                                   :'X-Auth-Token' => @keystone_token)
+      raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
+
+      parse_jobids response
     end
 
     # Returns [String] of job ids.
