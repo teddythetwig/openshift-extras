@@ -142,8 +142,10 @@ module OpenShift
         $stderr.print "Using existing monitor: #{monitor_name}"
       else
         monitor_path = generate_monitor_path app_name, namespace
-        $stderr.print "Creating new monitor #{monitor_name} with path #{monitor_path}\n"
-        @lb_controller.create_monitor monitor_name, monitor_path, '1'
+        unless monitor_name.nil? or monitor_name.empty? or monitor_path.nil? or monitor_path.empty?
+          $stderr.print "Creating new monitor #{monitor_name} with path #{monitor_path}\n"
+          @lb_controller.create_monitor monitor_name, monitor_path, '1'
+        end
       end
 
       $stderr.print "Creating new pool: #{pool_name}\n"
