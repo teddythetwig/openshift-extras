@@ -76,8 +76,8 @@ module OpenShift
     end
 
     def create_monitor monitor_name, path, up_code
-      @bigip['LocalLB.Monitor'].create_template({:templates=>[{:parent_template=>'http', :interval=>30, :timeout=>30, :dest_ipport=>ipport, :is_read_only=>true, :is_directly_usable=>true}], :template_attributes=>[{:template_name=>monitor_name, :template_type=>'TTYPE_HTTP'}]})
-      @bigip['LocalLB.Monitor'].set_template_string_property({:template_names=>[monitor_name], :values=>[{:type=>'STYPE_GET', :value=>"GET #{path}"}, {:type=>'STYPE_RECEIVE', :value=>up_code}]})
+      @bigip['LocalLB.Monitor'].create_template [{:template_name=>monitor_name, :template_type=>'TTYPE_HTTP'}], [{:parent_template=>'http', :interval=>30, :timeout=>5, :dest_ipport=>{:address_type=>'ATYPE_STAR_ADDRESS_STAR_PORT', :ipport=>{:address=>'0.0.0.0', :port=>0}}, :is_read_only=>false, :is_directly_usable=>true}]
+      @bigip['LocalLB.Monitor'].set_template_string_property [monitor_name, monitor_name], [{:type=>'STYPE_SEND', :value=>"GET #{path}\\r\\n"}, {:type=>'STYPE_RECEIVE', :value=>up_code}]
     end
 
     def delete_monitor monitor_name

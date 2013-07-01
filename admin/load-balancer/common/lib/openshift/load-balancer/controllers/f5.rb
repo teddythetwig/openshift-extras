@@ -111,7 +111,7 @@ module OpenShift
     def create_monitor monitor_name, path, up_code
       raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
 
-      @lb_model.create_monitor monitor_name, path
+      @lb_model.create_monitor monitor_name, path, up_code
 
       @monitors.push monitor_name
     end
