@@ -21,10 +21,11 @@ a load-balancer.
 %install
 mkdir -p %{buildroot}%{_sbindir}
 
-cp bin/oo-* %{buildroot}%{_sbindir}/
+cp bin/oo-* bin/openshift-load-balancer-daemon %{buildroot}%{_sbindir}/
 
 %files
 %attr(0750,-,-) %{_sbindir}/oo-admin-load-balancer
+%attr(0750,-,-) %{_sbindir}/openshift-load-balancer-daemon
 
 %doc LICENSE
 
