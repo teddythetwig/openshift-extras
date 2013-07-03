@@ -1,3 +1,7 @@
+%if 0%{?fedora}%{?rhel} <= 6
+    %global scl ruby193
+    %global scl_prefix ruby193-
+%endif
 Summary:       OpenShift utilities for load-balancer integration
 Name:          openshift-origin-load-balancer-util
 Version: 0.0
@@ -7,6 +11,7 @@ License:       ASL 2.0
 URL:           http://www.openshift.com
 Source0:       http://mirror.openshift.com/pub/openshift-origin/source/%{name}/%{name}-%{version}.tar.gz
 Requires:      rubygem-openshift-origin-load-balancer-common
+Requires:      %{?scl:%scl_prefix}rubygem-daemons
 BuildArch:     noarch
 
 %description
