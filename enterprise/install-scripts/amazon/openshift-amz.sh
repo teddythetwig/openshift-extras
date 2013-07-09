@@ -229,6 +229,16 @@ install_node_pkgs()
   yum_install_or_exit -y $pkgs
 }
 
+# Remove abrt-addon-python if necessary
+# https://bugzilla.redhat.com/show_bug.cgi?id=907449
+# This only affects the python v2 cart
+remove_abrt_addon_python()
+{
+  if grep 'Enterprise Linux Server release 6.4' /etc/redhat-release && rpm -q abrt-addon-python && rpm -q openshift-origin-cartridge-python; then
+    yum remove -y abrt-addon-python
+  fi
+}
+
 # Install any cartridges developers may want.
 install_cartridges()
 {
@@ -429,6 +439,15 @@ configure_pam_on_node()
 
 configure_cgroups_on_node()
 {
+  for f in "runuser" "runuser-l" "sshd" "system-auth-ac"
+  do
+    t="/etc/pam.d/$f"
+    if ! grep -q "pam_cgroup" "$t"
+    then
+      echo -e "session\t\toptional\tpam_cgroup.so" >> "$t"
+    fi
+  done
+
   cp -vf /opt/rh/ruby193/root/usr/share/gems/doc/openshift-origin-node-*/cgconfig.conf /etc/cgconfig.conf
   restorecon -rv /etc/cgconfig.conf
   mkdir -p /cgroup
@@ -1181,6 +1200,10 @@ configure_controller()
             s/MONGO_DB=.*$/MONGO_DB=\"${mongodb_name}\"/" \
       /etc/openshift/broker.conf
 
+  # Set the ServerName for httpd
+  sed -i -e "s/ServerName .*$/ServerName ${hostname}/" \
+      /etc/httpd/conf.d/000002_openshift_origin_broker_servername.conf
+
   # Configure the broker service to start on boot.
   chkconfig openshift-broker on
   chkconfig openshift-console on
@@ -1274,7 +1297,21 @@ EOF
 # Configure httpd for authentication.
 configure_httpd_auth()
 {
-  # Install the Apache configuration file.
+  # Configure mod_auth_kerb if both CONF_BROKER_KRB_SERVICE_NAME
+  # and CONF_BROKER_KRB_AUTH_REALMS are specified
+  if [ -n "$CONF_BROKER_KRB_SERVICE_NAME" ] && [ -n "$CONF_BROKER_KRB_AUTH_REALMS" ]
+  then
+    yum_install_or_exit -y mod_auth_kerb
+    for d in /var/www/openshift/broker/httpd/conf.d /var/www/openshift/console/httpd/conf.d
+    do
+      sed -e "s#KrbServiceName.*#KrbServiceName ${CONF_BROKER_KRB_SERVICE_NAME}#" \
+        -e "s#KrbAuthRealms.*#KrbAuthRealms ${CONF_BROKER_KRB_AUTH_REALMS}#" \
+	$d/openshift-origin-auth-remote-user-kerberos.conf.sample > $d/openshift-origin-auth-remote-user-kerberos.conf
+    done
+    return
+  fi
+
+  # Install the Apache Basic Authentication configuration file.
   cp /var/www/openshift/broker/httpd/conf.d/openshift-origin-auth-remote-user-basic.conf.sample \
      /var/www/openshift/broker/httpd/conf.d/openshift-origin-auth-remote-user.conf
 
@@ -1340,7 +1377,7 @@ configure_wildcard_ssl_cert_on_node()
   # Generate a 2048 bit key and self-signed cert
   cat << EOF | openssl req -new -rand /dev/urandom \
 	-newkey rsa:2048 -nodes -keyout /etc/pki/tls/private/localhost.key \
-	-x509 -days 3650 -extensions v3_req \
+	-x509 -days 3650 \
 	-out /etc/pki/tls/certs/localhost.crt 2> /dev/null
 XX
 SomeState
@@ -1351,8 +1388,6 @@ SomeOrganizationalUnit
 root@${domain}
 EOF
 
-  # Generate a cert signing request (example)
-  #openssl req -new -in /etc/pki/tls/private/localhost.key -out /etc/pki/tls/certs/localhost.csr
 }
 
 configure_broker_ssl_cert()
@@ -1360,7 +1395,7 @@ configure_broker_ssl_cert()
   # Generate a 2048 bit key and self-signed cert
   cat << EOF | openssl req -new -rand /dev/urandom \
 	-newkey rsa:2048 -nodes -keyout /etc/pki/tls/private/localhost.key \
-	-x509 -days 3650 -extensions v3_req \
+	-x509 -days 3650 \
 	-out /etc/pki/tls/certs/localhost.crt 2> /dev/null
 XX
 SomeState
@@ -1409,6 +1444,10 @@ configure_node()
     mkdir -p /var/lib/openshift/.settings
     touch /var/lib/openshift/.settings/v1_cartridge_format
   fi
+
+  # Set the ServerName for httpd
+  sed -i -e "s/ServerName .*$/ServerName ${hostname}/" \
+      /etc/httpd/conf.d/000001_openshift_origin_node_servername.conf
 }
 
 # Run the cronjob installed by openshift-origin-msg-node-mcollective immediately
@@ -1769,19 +1808,19 @@ case "$CONF_INSTALL_METHOD" in
     ;;
   (rhn)
      echo "Register with RHN using an activation key"
-     rhnreg_ks --activationkey=${CONF_RHN_REG_ACTKEY} --profilename=${hostname}
-     yum-config-manager --setopt=rhel-x86_64-server-6.priority=2 rhel-x86_64-server-6 --save
-     yum-config-manager --setopt="rhel-x86_64-server-6.exclude=tomcat6*" rhel-x86_64-server-6 --save
+     rhnreg_ks --activationkey=${CONF_RHN_REG_ACTKEY} --profilename=${hostname} || exit 1
+     RHNPLUGINCONF="/etc/yum/pluginconf.d/rhnplugin.conf"
+     echo -e "[rhel-x86_64-server-6]\npriority=2\nexclude=tomcat6*\n" >> $RHNPLUGINCONF
 
-     for channel in rhel-x86_64-server-6-osop-1-rhc rhel-x86_64-server-6-osop-1-infrastructure
+     for channel in rhel-x86_64-server-6-ose-1.2-rhc rhel-x86_64-server-6-ose-1.2-infrastructure
      do
        broker && rhn-channel --add --channel ${channel} --user ${CONF_RHN_REG_NAME} --password ${CONF_RHN_REG_PASS}
-       yum-config-manager --setopt=${channel}.priority=1 ${channel} --save
+       echo -e "[${channel}]\npriority=1\n" >> $RHNPLUGINCONF
      done
-     for channel in rhel-x86_64-server-6-osop-1-node rhel-x86_64-server-6-osop-1-jbosseap
+     for channel in rhel-x86_64-server-6-ose-1.2-node rhel-x86_64-server-6-ose-1.2-jbosseap
      do
        node && rhn-channel --add --channel ${channel} --user ${CONF_RHN_REG_NAME} --password ${CONF_RHN_REG_PASS}
-       yum-config-manager --setopt=${channel}.priority=1 ${channel} --save
+       echo -e "[${channel}]\npriority=1\n" >> $RHNPLUGINCONF
      done
      for channel in jbappplatform-6-x86_64-server-6-rpm jb-ews-1-x86_64-server-6-rpm
      do
@@ -1794,16 +1833,52 @@ case "$CONF_INSTALL_METHOD" in
        rhn-channel --add --channel rhel-x86_64-server-optional-6 --user ${CONF_RHN_REG_NAME} --password ${CONF_RHN_REG_PASS}
      fi
      ;;
-  (sm)
-     #sm_reg_name / CONF_SM_REG_NAME
-     #sm_reg_pass / CONF_SM_REG_PASS
-     #sm_reg_pool / CONF_SM_REG_POOL
-     echo "sam"
+  (rhsm)
+     echo "Register with RHSM using a pool ID"
+     subscription-manager register --username=$CONF_SM_REG_NAME --password=$CONF_SM_REG_PASS || exit 1
+     # add the necessary subscriptions
+     subscription-manager attach --auto || exit 1
+     subscription-manager attach --pool $CONF_SM_REG_POOL || exit 1
+     # have yum sync new list of repos from rhsm before changing settings
+     yum repolist
+
+     # configure the RHEL subscription
+     yum-config-manager --setopt=rhel-6-server-rpms.priority=2 rhel-6-server-rpms --save
+     yum-config-manager --setopt="rhel-6-server-rpms.exclude=tomcat6*" rhel-6-server-rpms --save
+     if is_true "$CONF_OPTIONAL_REPO"; then
+       yum-config-manager --enable rhel-6-server-optional-rpms
+     fi
+
+     # and the OpenShift subscription
+     if broker; then
+       for channel in rhel-server-ose-1.2-infra-6-rpms rhel-server-ose-1.2-rhc-6-rpms
+       do
+         yum-config-manager --enable ${channel}
+         yum-config-manager --setopt=${channel}.priority=1 ${channel} --save
+       done
+     fi
+     if node; then
+       for channel in rhel-server-ose-1.2-node-6-rpms rhel-server-ose-1.2-jbosseap-6-rpms
+       do
+         yum-config-manager --enable ${channel}
+         yum-config-manager --setopt=${channel}.priority=1 ${channel} --save
+       done
+       # and JBoss subscriptions for the node
+       for channel in jb-eap-6-for-rhel-6-server-rpms jb-ews-2-for-rhel-6-server-rpms
+       do
+         yum-config-manager --enable ${channel}
+         yum-config-manager --setopt=${channel}.priority=3 ${channel} --save
+       done
+       yum-config-manager --disable jb-ews-1-for-rhel-6-server-rpms
+       yum-config-manager --disable jb-eap-5-for-rhel-6-server-rpms
+     fi
      ;;
 esac
 
 # Install yum-plugin-priorities
-yum clean all; yum install -y yum-plugin-priorities
+yum clean all
+echo "Installing yum-plugin-priorities; if something goes wrong here, check your install source."
+yum install -y yum-plugin-priorities || exit 1
 
 yum update -y
 
@@ -1830,6 +1905,7 @@ node && configure_mcollective_for_activemq_on_node
 broker && install_broker_pkgs
 node && install_node_pkgs
 node && install_cartridges
+node && remove_abrt_addon_python
 broker && install_rhc_pkg
 
 broker && enable_services_on_broker
