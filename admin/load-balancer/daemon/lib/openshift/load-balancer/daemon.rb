@@ -1,8 +1,4 @@
 require 'rubygems'
-require 'openshift/load-balancer/controllers/f5'
-require 'openshift/load-balancer/models/f5'
-require 'openshift/load-balancer/controllers/lbaas'
-require 'openshift/load-balancer/models/lbaas'
 require 'parseconfig'
 require 'stomp'
 require 'timeout'
@@ -39,9 +35,15 @@ module OpenShift
       # @lb_controller_class.
       case cfg['LOAD_BALANCER'].downcase
       when 'f5'
+        require 'openshift/load-balancer/controllers/f5'
+        require 'openshift/load-balancer/models/f5'
+
         @lb_model_class = OpenShift::F5LoadBalancerModel
         @lb_controller_class = OpenShift::F5LoadBalancerController
       when 'lbaas'
+        require 'openshift/load-balancer/models/lbaas'
+        require 'openshift/load-balancer/controllers/lbaas'
+
         @lb_model_class = OpenShift::LBaaSLoadBalancerModel
         @lb_controller_class = OpenShift::AsyncLoadBalancerController
       else

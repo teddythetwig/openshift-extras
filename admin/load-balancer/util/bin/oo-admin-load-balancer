@@ -16,10 +16,7 @@
 #++
 
 require 'rubygems'
-require 'openshift/load-balancer/controllers/f5'
-require 'openshift/load-balancer/models/f5'
-require 'openshift/load-balancer/controllers/lbaas'
-require 'openshift/load-balancer/models/lbaas'
+require 'parseconfig'
 
 # Initialize the controller lazily, so we initialize it exactly zero
 # times if we never use it and exactly one time if we do use it.
@@ -39,9 +36,15 @@ class LazyLBController
 
     case cfg['LOAD_BALANCER']
     when 'lbaas'
+      require 'openshift/load-balancer/controllers/lbaas'
+      require 'openshift/load-balancer/models/lbaas'
+
       @lb_controller_class = OpenShift::AsyncLoadBalancerController
       @lb_model_class = OpenShift::LBaaSLoadBalancerModel
     when 'f5'
+      require 'openshift/load-balancer/controllers/f5'
+      require 'openshift/load-balancer/models/f5'
+
       @lb_controller_class = OpenShift::F5LoadBalancerController
       @lb_model_class = OpenShift::F5LoadBalancerModel
     else
