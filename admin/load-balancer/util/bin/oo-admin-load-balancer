@@ -159,7 +159,7 @@ argvs.each do |argv|
 
   rescue => e
     $stderr.puts(e.to_s)
-    $stderr.puts(e.backtrace)
+    $stderr.puts(e.backtrace) unless e.class == ArgumentError
     exit 1
   end
 end
