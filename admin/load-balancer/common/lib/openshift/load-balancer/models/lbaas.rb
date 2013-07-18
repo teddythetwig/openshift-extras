@@ -232,7 +232,7 @@ module OpenShift
     # Returns String representing the keystone token and sets @keystone_token to
     # the same.  This method must be called before the others, which use
     # @keystone_token.
-    def authenticate host, user=@user, passwd=@passwd, tenant=@tenant
+    def authenticate host, user=@user, passwd=@passwd, tenantname=@tenant
       response = RestClient.post("http://#{host}/v2.0/tokens",
                                  {
                                    :auth => {
@@ -274,8 +274,8 @@ module OpenShift
       @keystone_token = JSON.parse(response)['access']['token']['id']
     end
 
-    def initialize host, user=nil, passwd=nil, tenant=nil
-      @host, @user, @passwd, @tenant = host, user, passwd, tenant
+    def initialize host, user=nil, passwd=nil, tenantname=nil
+      @host, @user, @passwd, @tenant = host, user, passwd, tenantname
     end
 
   end
