@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'json'
+require 'pp'
 require 'rest_client'
 require 'openshift/load-balancer/controllers/load_balancer'
 
@@ -371,7 +372,9 @@ module OpenShift
           op.jobids.delete id
           reap_op_if_no_remaining_tasks op
         when 'FAILED'
-          $stderr.puts "LBaaS reports that job #{id} failed.  Cancelling associated operation and any operations that it blocks..."
+          $stderr.puts "LBaaS reports job #{id} failed."
+          $stderr.puts "Following are the job details from LBaaS:", status.pretty_inspect
+          $stderr.puts "Cancelling associated operation and any operations that it blocks..."
 
           cancel_op op
 
