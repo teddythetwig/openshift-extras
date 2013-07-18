@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.4
+Version: 0.5
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,9 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Thu Jul 18 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.5-1
+- Bump version number
+
 * Thu Jul 18 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.4-1
 - Rewrite LBaaS keystone authentication (miciah.masters@gmail.com)
 - models/lbaas.rb: Better error handling in auth (miciah.masters@gmail.com)
