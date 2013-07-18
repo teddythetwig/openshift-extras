@@ -254,7 +254,9 @@ module OpenShift
                                  :'X-Auth-Token' => temp_token)
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
-      tenant_id = JSON.parse(response)['tenants'].select {|t| t['name'] == user}.first['id']
+      tenants = JSON.parse(response)['tenants'] or raise LBModelException.new "Error getting list of tenants from keystone"
+      tenant = tenants.find {|t| t['name'] == user} or raise LBModelException.new "Tenant not found: #{user}"
+      tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for user: #{user}"
 
       response = RestClient.post("http://#{host}/v2.0/tokens",
                                  {
