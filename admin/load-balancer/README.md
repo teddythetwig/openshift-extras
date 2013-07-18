@@ -64,9 +64,11 @@ and LBAAS_MONITOR to match your LBaaS configuration.
 Monitors
 --------
 The F5 and LBaaS backends can add an existing monitor to newly created pools.
-Set the appropriate option (BIGIP_MONITOR for F5, LBAAS_MONITOR for LBaaS) to
-the name of the monitor you would like to use, or leave the option unspecified
-to disable this functionality.
+Set the MONITOR_NAME to the name of the monitor you would like to use, and set
+MONITOR_PATH to the pathname to use for the monitor, or leave either option
+unspecified to disable the monitor functionality.
 
-The daemon does not create the monitor itself; it is incumbent on the
-administrator to define the monitors prior to running the daemon.
+MONITOR_NAME and MONITOR_PATH both can contain formats: %a is expanded to the
+name of the application, and %n is expanded to the application's namespace.
+The daemon will automatically create a new monitor when MONITOR_NAME expands
+a string that does not match the name of any existing monitor.
