@@ -141,10 +141,11 @@ module OpenShift
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
 
       @lbaas_host = cfg['LBAAS_HOST'] || '127.0.0.1'
+      @lbaas_tenant = cfg['LBAAS_TENANT'] || 'openshift'
       @lbaas_keystone_host = cfg['LBAAS_KEYSTONE_HOST'] || @lbaas_host
-      @lbaas_username = cfg['LBAAS_USERNAME'] || 'admin'
-      @lbaas_password = cfg['LBAAS_PASSWORD'] || 'passwd'
-      @lbaas_tenant = cfg['LBAAS_TENANT'] || 'lbms'
+      @lbaas_keystone_username = cfg['LBAAS_KEYSTONE_USERNAME'] || 'admin'
+      @lbaas_keystone_password = cfg['LBAAS_KEYSTONE_PASSWORD'] || 'passwd'
+      @lbaas_keystone_tenant = cfg['LBAAS_KEYSTONE_TENANT'] || 'lbms'
 
       @virtual_server_name = cfg['VIRTUAL_SERVER']
 
@@ -382,10 +383,10 @@ module OpenShift
     def initialize lb_model_class
       read_config
 
-      @lb_model = lb_model_class.new @lbaas_host, @lbaas_username, @lbaas_password, @lbaas_tenant
+      @lb_model = lb_model_class.new @lbaas_host, @lbaas_tenant
 
       $stderr.print "Authenticating with keystone at host #{@lbaas_keystone_host}...\n"
-      @lb_model.authenticate @lbaas_keystone_host, @lbaas_username, @lbaas_password, @lbaas_tenant
+      @lb_model.authenticate @lbaas_keystone_host, @lbaas_keystone_username, @lbaas_keystone_password, @lbaas_keystone_tenant
 
       # If the pool has been created or is being created in the load balancer, it will be in @pools.
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]

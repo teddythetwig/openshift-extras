@@ -56,10 +56,11 @@ to the gears via the node's port-proxy.
 Using LBaaS
 -----------
 
-After enabling the LBaaS module as described in the section on configuring the
-daemon, edit /etc/openshift/load-balancer.conf to set the appropriate values for
-LBAAS_HOST, LBAAS_KEYSTONE_HOST, LBAAS_USERNAME, LBAAS_PASSWORD, LBAAS_TENANT,
-and LBAAS_MONITOR to match your LBaaS configuration.
+After enabling the LBaaS module as described in the section on
+configuring the daemon, edit /etc/openshift/load-balancer.conf to set
+the appropriate values for LBAAS_HOST, LBAAS_TENANT, LBAAS_KEYSTONE_HOST,
+LBAAS_KEYSTONE_USERNAME, LBAAS_KEYSTONE_PASSWORD, andLBAAS_KEYSTONE_TENANT,
+to match your LBaaS configuration.
 
 Monitors
 --------

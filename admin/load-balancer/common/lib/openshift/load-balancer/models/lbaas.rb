@@ -232,13 +232,13 @@ module OpenShift
     # Returns String representing the keystone token and sets @keystone_token to
     # the same.  This method must be called before the others, which use
     # @keystone_token.
-    def authenticate host, user=@user, passwd=@passwd, tenantname=@tenant
-      response = RestClient.post("http://#{host}/v2.0/tokens",
+    def authenticate keystone_host, keystone_username, keystone_password, keystone_tenant
+      response = RestClient.post("http://#{keystone_host}/v2.0/tokens",
                                  {
                                    :auth => {
                                      :passwordCredentials => {
-                                       :username => user,
-                                       :password => passwd
+                                       :username => keystone_username,
+                                       :password => keystone_password
                                      }
                                    }
                                  }.to_json,
@@ -248,23 +248,23 @@ module OpenShift
 
       temp_token = JSON.parse(response)['access']['token']['id']
 
-      response = RestClient.get("http://#{host}/v2.0/tenants",
+      response = RestClient.get("http://#{keystone_host}/v2.0/tenants",
                                  :content_type => :json,
                                  :accept => :json,
                                  :'X-Auth-Token' => temp_token)
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       tenants = JSON.parse(response)['tenants'] or raise LBModelException.new "Error getting list of tenants from keystone"
-      tenant = tenants.find {|t| t['name'] == user} or raise LBModelException.new "Tenant not found: #{user}"
-      tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for user: #{user}"
+      tenant = tenants.find {|t| t['name'] == keystone_tenant} or raise LBModelException.new "Keystone tenant not found: #{keystone_tenant}"
+      tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for keystone tenant: #{keystone_tenant}"
 
-      response = RestClient.post("http://#{host}/v2.0/tokens",
+      response = RestClient.post("http://#{keystone_host}/v2.0/tokens",
                                  {
                                    :auth => {
                                      :project => 'lbms',
                                      :passwordCredentials => {
-                                       :username => user,
-                                       :password => passwd
+                                       :username => keystone_username,
+                                       :password => keystone_password
                                      },
                                      :tenantId => tenant_id
                                    }
@@ -276,8 +276,8 @@ module OpenShift
       @keystone_token = JSON.parse(response)['access']['token']['id']
     end
 
-    def initialize host, user=nil, passwd=nil, tenantname=nil
-      @host, @user, @passwd, @tenant = host, user, passwd, tenantname
+    def initialize host, tenant
+      @host, @tenant = host, tenant
     end
 
   end
