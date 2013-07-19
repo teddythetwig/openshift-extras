@@ -188,6 +188,73 @@ module OpenShift
       @ops.delete op
     end
 
+    # combine_pool_member_ops :: Symbol, [Operation] -> Operation
+    #
+    # Each Operation in the input has the same type (either :add_pool_member
+    # or :delete_pool_member), and it should be a ready op (i.e., blocked_on_cnt
+    # should be 0 and jobids should be empty).
+    #
+    # This method combines these Operation objects into a single Operation
+    # object with the given type (which should be either :add_pool_members or
+    # :delete_pool_members).  This op's operands is derived from the input
+    # Operation objects.  Its blocked_on_cnt is 0, its jobids is empty, and
+    # its blocked_ops is derived from the input Operation objects.
+    def combine_pool_member_ops type, ops
+      # Each Operation in ops has the same operand[0] (the pool name).
+      # The operands, blocked_on_cnt, jobids,
+      # and blocked_ops fields are constructed by combining those
+      # of the :add_pool_member operations.
+      Operation.new(type,
+        *ops.
+          # group_by :: [Operation] -> {String => [Operation]}
+          group_by {|op| op.operands[0]}.
+            # map :: {Symbol => [Operation]} -> [[String, [[String, String]], [Operation]]]
+            map {|pool,ops| [pool, *ops.map {|op| [op.operands.slice(1,2), op.blocked_ops]}.
+              # transpose :: [[[String, String], [Operation]]] -> [[[String, String]], [[Operation]]]
+              transpose.
+              # tap :: flatten [[[String, String]], [[Operation]]] -> [[[String, String]], [Operation]]
+              tap {|ops,blocks| break [ops, blocks.flatten(1)]}
+              # The * splat operator on the containing map gives us the following:
+              # * :: [[[String, String]], [Operation]] -> [[String, String]], [Operation]
+              # which goes inside the containing array.
+            ]}.
+            # map :: [[String, [[String, String]], [Operation]]] -> [[[String, [[String, String]]], [Operation]]]
+            map {|pools, members, blocked_ops| [[pools, members], blocked_ops]}.
+            # transpose :: [[[String, [[String, String]]], [Operation]]] -> [[[String, [[String, String]]]], [[Operation]]]
+            transpose.
+            # tap :: [[[String, [[String, String]]]], [[Operation]]] -> [[[String], [[[String, String]]]], [Operation]]
+            tap {|x,blocked_ops| break [x.transpose, blocked_ops.flatten]}.
+            # tap :: [[[String], [[[String, String]]]], [Operation]] -> [[[String], [[[String, String]]]], 0, [], [Operation]]
+            tap {|x,blocked_ops| break [x, 0, [], blocked_ops]}
+            # The splat * operator in the containing Operation.new method call
+            # gives us the following:
+            # * :: [[String], [[[String, String]]]], 0, [], [Operation]
+            # which, along with the type, are the arguments to the method.
+      )
+    end
+
+    # combine_like_ops :: [Operation] -> [Operation]
+    def combine_like_ops ops
+      ops.
+        # group_by :: [Operation] -> {Symbol => [Operation]}
+        group_by {|op| op.type}.
+        # map :: {Symbol => [Operation]} -> [[Operation]]
+        map {|type,ops|
+          # Symbol, [Operation] -> [Operation]
+          # Each Operation in the input has the same type.
+          case type
+          when :add_pool_member
+            [combine_pool_member_ops(:add_pool_members, ops)]
+          when :delete_pool_member
+            [combine_pool_member_ops(:delete_pool_members, ops)]
+          else
+            ops
+          end
+        }.
+        # [[Operation]] -> [Operation]
+        flatten 1
+    end
+
     def create_pool pool_name, monitor_name=nil
       raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
 
@@ -304,21 +371,23 @@ module OpenShift
       # of being added to the load balancer, as denoted by the existence
       # of job ids associated with such pools, and jobs that are waiting
       # on other jobs.  Note that order is preserved.
-      # [Operation] -> [Operation]
-      ready_ops = @ops.select {|op| op.jobids.empty? && op.blocked_on_cnt.zero?}
+      # [Operation] -> [Operation], [Operation]
+      ready_ops, @ops = @ops.partition {|op| op.jobids.empty? && op.blocked_on_cnt.zero?}
 
-      # Take ready_ops and translate it into a hash where the keys are the pool
-      # names and the values are Operation objects.  Note that the order in
-      # which Operation objects appear in ready_ops is preserved.
-      # [Operation] -> {String => [Operation]}
-      #pool_ready_ops = ready_ops.inject(Hash.new {Array.new}) {|h,(k,v)| h[k] = h[k].push v; h}
       # TODO: Delete pairs of Operation objects that cancel out (e.g.,
       # an :add_pool_member and a :delete_pool_member operation that
       # for the same member, when neither operation has been submitted
       # or blocks another operation).
 
+      # Combine similar operations, such as two :add_pool_member
+      # operations that affect the same pool.
+      ready_ops = combine_like_ops ready_ops
+
+      # Put these combined ops back into @ops so we can track them after
+      # we have submitted them.
+      @ops = @ops + ready_ops
+
       # Submit ready operations to the load balancer.
-      # TODO: We can combine like operations.
       ready_ops.each do |op|
         begin
           $stderr.puts "Submitting operation to LBaaS: #{op.type}(#{op.operands.join ', '})."
