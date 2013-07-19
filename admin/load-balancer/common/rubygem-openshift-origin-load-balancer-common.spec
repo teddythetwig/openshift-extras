@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.5
+Version: 0.6
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,11 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Fri Jul 19 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.6-1
+- controllers/lbaas.rb: Combine add/remove ops (miciah.masters@gmail.com)
+- controllers/lbaas.rb: Print details when job fails (miciah.masters@gmail.com)
+- controllers/lbaas.rb: Print polling status (miciah.masters@gmail.com)
+
 * Thu Jul 18 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.5-1
 - Bump version number
 
