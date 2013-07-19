@@ -184,7 +184,7 @@ module OpenShift
 
     def cancel_op op
       op.blocked_ops.each {|op| cancel_op op}
-      $stderr.puts "Cancelling operation: #{op.type})(#{op.operands.join ', '})."
+      $stderr.puts "Cancelling operation: #{op.type}(#{op.operands.join ', '})."
       @ops.delete op
     end
 
