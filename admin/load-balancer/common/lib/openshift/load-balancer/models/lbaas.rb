@@ -278,7 +278,7 @@ module OpenShift
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
-      $strerr.puts "Got permanent token: #{@keystone_token}"
+      $stderr.puts "Got permanent token: #{@keystone_token}"
       @keystone_token
     end
 
