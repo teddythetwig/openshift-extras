@@ -67,9 +67,6 @@ module OpenShift
       JSON.parse(RestClient.get("http://#{@host}/loadbalancers/tenant/#{@tenant}/policies", :content_type => :json, :accept => :json, :'X-Auth-Token' => @keystone_token))['policy'].map {|p| p['name']}
     end
 
-    def get_active_route_names
-      @bigip['LocalLB.VirtualServer'].get_httpclass_profile(['ose-vlan'])[0].map{|profile| profile.profile_name}
-    end
     alias_method :get_active_route_names, :get_route_names
 
     # Returns [String] of job ids.
