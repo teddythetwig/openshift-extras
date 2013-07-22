@@ -233,6 +233,7 @@ module OpenShift
     # the same.  This method must be called before the others, which use
     # @keystone_token.
     def authenticate keystone_host, keystone_username, keystone_password, keystone_tenant
+      $stderr.puts "Requesting temporary token from keystone..."
       response = RestClient.post("http://#{keystone_host}/v2.0/tokens",
                                  {
                                    :auth => {
@@ -247,7 +248,9 @@ module OpenShift
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       temp_token = JSON.parse(response)['access']['token']['id']
+      $stderr.puts "Got temporary token: #{temp_token}"
 
+      $stderr.puts "Requesting list of keystone tenants..."
       response = RestClient.get("http://#{keystone_host}/v2.0/tenants",
                                  :content_type => :json,
                                  :accept => :json,
@@ -258,6 +261,7 @@ module OpenShift
       tenant = tenants.find {|t| t['name'] == keystone_tenant} or raise LBModelException.new "Keystone tenant not found: #{keystone_tenant}"
       tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for keystone tenant: #{keystone_tenant}"
 
+      $stderr.puts "Requesting temporary token from keystone..."
       response = RestClient.post("http://#{keystone_host}/v2.0/tokens",
                                  {
                                    :auth => {
@@ -274,6 +278,8 @@ module OpenShift
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
+      $strerr.puts "Got permanent token: #{@keystone_token}"
+      @keystone_token
     end
 
     def initialize host, tenant
