@@ -473,12 +473,15 @@ module OpenShift
       @lb_model.authenticate @lbaas_keystone_host, @lbaas_keystone_username, @lbaas_keystone_password, @lbaas_keystone_tenant
 
       # If the pool has been created or is being created in the load balancer, it will be in @pools.
+      $stderr.print "Requesting list of pools from LBaaS...\n"
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
 
       # If the route is already created or is being created in the load balancer, it will be in @routes.
+      $stderr.print "Requesting list of routing rules from LBaaS...\n"
       @routes = @lb_model.get_active_route_names
 
       # If the monitor is already created or is being created in the load balancer, it will be in @monitors.
+      $stderr.print "Requesting list of monitors from LBaaS...\n"
       @monitors = @lb_model.get_monitor_names
 
       # If an Operation has been created but not yet completed (whether
