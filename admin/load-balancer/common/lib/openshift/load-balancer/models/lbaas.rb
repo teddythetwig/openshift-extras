@@ -258,7 +258,7 @@ module OpenShift
       tenant = tenants.find {|t| t['name'] == keystone_tenant} or raise LBModelException.new "Keystone tenant not found: #{keystone_tenant}"
       tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for keystone tenant: #{keystone_tenant}"
 
-      $stderr.puts "Requesting temporary token from keystone..."
+      $stderr.puts "Requesting permanent token from keystone..."
       response = RestClient.post("http://#{keystone_host}/v2.0/tokens",
                                  {
                                    :auth => {
