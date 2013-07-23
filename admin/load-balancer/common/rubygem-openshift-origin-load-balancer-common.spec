@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.10
+Version: 0.11
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,9 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Tue Jul 23 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.11-1
+- LBaaS: re-authenticate when the token expires (miciah.masters@gmail.com)
+
 * Tue Jul 23 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.10-1
 - controllers/lbaas.rb: Improve Operation logging (miciah.masters@gmail.com)
 - load-balancer.conf: Increase timeouts to 5 mins (miciah.masters@gmail.com)
