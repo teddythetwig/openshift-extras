@@ -16,6 +16,8 @@ module OpenShift
       ret = {
         :content_type => :json,
         :accept => :json,
+        :timeout => @timeout,
+        :open_timeout => @open_timeout,
       }
 
       ret[:'X-Auth-Token'] = @keystone_token if @keystone_token
@@ -289,8 +291,8 @@ module OpenShift
       @keystone_token
     end
 
-    def initialize host, tenant
-      @host, @tenant = host, tenant
+    def initialize host, tenant, timeout=60, open_timeout=30
+      @host, @tenant, @timeout, @open_timeout = host, tenant, timeout, open_timeout
     end
 
   end

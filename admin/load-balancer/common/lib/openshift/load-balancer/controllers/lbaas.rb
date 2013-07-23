@@ -143,6 +143,8 @@ module OpenShift
 
       @lbaas_host = cfg['LBAAS_HOST'] || '127.0.0.1'
       @lbaas_tenant = cfg['LBAAS_TENANT'] || 'openshift'
+      @lbaas_timeout = cfg['LBAAS_TIMEOUT'] || '60'
+      @lbaas_open_timeout = cfg['LBAAS_OPEN_TIMEOUT'] || '30'
       @lbaas_keystone_host = cfg['LBAAS_KEYSTONE_HOST'] || @lbaas_host
       @lbaas_keystone_username = cfg['LBAAS_KEYSTONE_USERNAME'] || 'admin'
       @lbaas_keystone_password = cfg['LBAAS_KEYSTONE_PASSWORD'] || 'passwd'
@@ -457,7 +459,7 @@ module OpenShift
     def initialize lb_model_class
       read_config
 
-      @lb_model = lb_model_class.new @lbaas_host, @lbaas_tenant
+      @lb_model = lb_model_class.new @lbaas_host, @lbaas_tenant, @lbaas_timeout.to_i, @lbaas_open_timeout.to_i
 
       $stderr.print "Authenticating with keystone at host #{@lbaas_keystone_host}...\n"
       @lb_model.authenticate @lbaas_keystone_host, @lbaas_keystone_username, @lbaas_keystone_password, @lbaas_keystone_tenant
