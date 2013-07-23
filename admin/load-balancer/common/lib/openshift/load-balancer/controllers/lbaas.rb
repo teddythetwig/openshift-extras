@@ -425,7 +425,7 @@ module OpenShift
       jobs = submitted_ops.map {|op| op.jobids.map {|id| [op,id]}}.flatten(1)
       # [Operation] -> [[Operation,String]]
 
-      $stderr.puts "Polling #{jobs.length} active jobs: #{jobs.join ', '}" unless jobs.empty?
+      $stderr.puts "Polling #{jobs.length} active jobs: #{jobs.map {|op,id| id}.join ', '}" unless jobs.empty?
 
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
