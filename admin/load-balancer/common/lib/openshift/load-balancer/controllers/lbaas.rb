@@ -403,6 +403,11 @@ module OpenShift
           $stderr.puts "Submitting operation to LBaaS: #{op}."
           op.jobids = @lb_model.send op.type, *op.operands
           $stderr.puts "Got back jobids #{op.jobids.join ', '}."
+
+          # In case the operation generates no jobs and is immediately done, we
+          # must reap it now because there will be no completion of a job to
+          # trigger the reaping.
+          reap_op_if_no_remaining_tasks op
         rescue => e
           $stderr.puts "Got exception: #{e.message}"
           $stderr.puts 'Backtrace:', e.backtrace
@@ -413,11 +418,6 @@ module OpenShift
 
           $stderr.puts "Done."
         end
-
-        # In case the operation generates no jobs and is immediately done, we
-        # must reap it now because there will be no completion of a job to
-        # trigger the reaping.
-        reap_op_if_no_remaining_tasks op
       end
     end
 
