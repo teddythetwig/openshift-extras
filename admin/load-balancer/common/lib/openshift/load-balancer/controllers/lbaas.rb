@@ -370,7 +370,7 @@ module OpenShift
     # Update the load balancer with any queued updates.
     def update
       # Re-authenticate if needed.
-      @lb_model.maybe_reauthenticate if @lb_model.responds_to? :maybe_reauthenticate
+      @lb_model.maybe_reauthenticate if @lb_model.respond_to? :maybe_reauthenticate
 
       # Check whether any previously submitted operations have completed.
       poll_async_jobs
