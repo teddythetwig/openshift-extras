@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.8
+Version: 0.9
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,13 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Tue Jul 23 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.9-1
+- Add LBAAS_TIMEOUT and LBAAS_OPEN_TIMEOUT (miciah.masters@gmail.com)
+- models/lbaas.rb: Refactor REST Calls (miciah.masters@gmail.com)
+- models/lbaas.rb: Fix authentication logging (miciah.masters@gmail.com)
+- controllers/lbaas.rb: Fix polling logging (miciah.masters@gmail.com)
+- models/lbaas.rb: Remove dead code (miciah.masters@gmail.com)
+
 * Mon Jul 22 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.8-1
 - Fix embarrassing typo in last commit (miciah.masters@gmail.com)
 
