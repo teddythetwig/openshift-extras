@@ -17,8 +17,6 @@ module OpenShift
       ret = {
         :content_type => :json,
         :accept => :json,
-        :timeout => @timeout,
-        :open_timeout => @open_timeout,
       }
 
       ret[:'X-Auth-Token'] = @keystone_token if @keystone_token
@@ -29,21 +27,21 @@ module OpenShift
     # Send a GET request to the given URL and return the response.
     # get :: String -> Net::HTTPResponse
     def get url
-      RestClient::Request.execute(:method => :get, :url => url, :headers => lbaas_headers)
+      RestClient::Request.execute(:method => :get, :url => url, :headers => lbaas_headers, :timeout => @timeout, :open_timeout => @open_timeout)
     end
 
     # Send a POST request to the given URL with the given payload and
     # return the response.
     # post :: String, String -> Net::HTTPResponse
     def post url, payload
-      RestClient::Request.execute(:method => :post, :url => url, :payload => payload, :headers => lbaas_headers)
+      RestClient::Request.execute(:method => :post, :url => url, :payload => payload, :headers => lbaas_headers, :timeout => @timeout, :open_timeout => @open_timeout)
     end
 
     # Send a PUT request to the given URL with the given payload and
     # return the response.
     # put :: String, String -> Net::HTTPResponse
     def put url, payload
-      RestClient::Request.execute(:method => :put, :url => url, :payload => payload, :headers => lbaas_headers)
+      RestClient::Request.execute(:method => :put, :url => url, :payload => payload, :headers => lbaas_headers, :timeout => @timeout, :open_timeout => @open_timeout)
     end
 
     # Parses the response from a RestClient request to LBaaS and returns an
