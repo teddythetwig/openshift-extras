@@ -1,3 +1,4 @@
+require 'time'
 require 'openshift/load-balancer/models/load_balancer'
 
 module OpenShift
@@ -241,10 +242,23 @@ module OpenShift
       JSON.parse(response)
     end
 
+    # Re-authenticate if the token will expire within a period equal
+    # to twice the timeout.
+    def maybe_reauthenticate
+      if @keystone_token_expiration < Time.now + 2*@timeout
+        $stderr.puts "Permanent token will expire soon.  Re-authenticating..."
+        authenticate @keystone_host, @keystone_username, @keystone_password, @keystone_tenant
+      end
+    end
+
     # Returns String representing the keystone token and sets @keystone_token to
     # the same.  This method must be called before the others, which use
     # @keystone_token.
     def authenticate keystone_host, keystone_username, keystone_password, keystone_tenant
+      # Save the keystone information for the maybe_reauthenticate
+      # method's use.
+      @keystone_host, @keystone_username, @keystone_password, @keystone_tenant = keystone_host, keystone_username, keystone_password, keystone_tenant
+
       # Be sure not to have a token saved so as not to send it when
       # requesting the temporary token.
       @keystone_token = nil
@@ -287,7 +301,8 @@ module OpenShift
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
-      $stderr.puts "Got permanent token: #{@keystone_token}"
+      @keystone_token_expiration = Time.parse JSON.parse(response)['access']['token']['expires']
+      $stderr.puts "Got permanent token: #{@keystone_token} with expiration #{@keystone_token_expiration.to_s}"
       @keystone_token
     end
 
