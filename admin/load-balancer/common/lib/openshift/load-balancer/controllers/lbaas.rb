@@ -129,11 +129,16 @@ module OpenShift
     #
     # Because we only ever make a new Operation block on existing Operation
     # objects, deadlocks are not possible.
-    Operation = Struct.new :type, :operands, :blocked_on_cnt, :jobids, :blocked_ops
+
     # Symbol, [Object], [String], [Operation], Integer
     # XXX: All instances of Operation have a pool name (String) as the first
     # operand; it might be clearer to move this operand into a new unique
     # field of Operand.
+    class Operation < Struct.new :type, :operands, :blocked_on_cnt, :jobids, :blocked_ops
+      def to_s
+        "#{type}(#{operands.map {|operand| operand.inspect}.join ', '})"
+      end
+    end
 
     attr_reader :ops # [Operation]
     attr_reader :routes, :active_routes, :monitors
@@ -179,14 +184,14 @@ module OpenShift
 
     def reap_op_if_no_remaining_tasks op
       if op.jobids.empty?
-        $stderr.puts "Deleting completed operation: #{op.type}(#{op.operands.join ', '})."
+        $stderr.puts "Deleting completed operation: #{op}."
         reap_op op
       end
     end
 
     def cancel_op op
       op.blocked_ops.each {|op| cancel_op op}
-      $stderr.puts "Cancelling operation: #{op.type}(#{op.operands.join ', '})."
+      $stderr.puts "Cancelling operation: #{op}."
       @ops.delete op
     end
 
@@ -392,7 +397,7 @@ module OpenShift
       # Submit ready operations to the load balancer.
       ready_ops.each do |op|
         begin
-          $stderr.puts "Submitting operation to LBaaS: #{op.type}(#{op.operands.join ', '})."
+          $stderr.puts "Submitting operation to LBaaS: #{op}."
           op.jobids = @lb_model.send op.type, *op.operands
           $stderr.puts "Got back jobids #{op.jobids.join ', '}."
         rescue => e
