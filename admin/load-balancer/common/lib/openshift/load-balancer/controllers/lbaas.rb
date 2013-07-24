@@ -408,7 +408,7 @@ module OpenShift
           reap_op_if_no_remaining_tasks op
         rescue => e
           @logger.warn "Got exception: #{e.message}"
-          @logger.debug "Backtrace:\n#{e.backtrace}"
+          @logger.debug "Backtrace:\n#{e.backtrace.join "\n"}"
 
           @logger.info "Cancelling the operation and any operations that it blocks..."
 

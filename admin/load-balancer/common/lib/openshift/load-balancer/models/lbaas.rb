@@ -52,7 +52,7 @@ module OpenShift
         JSON.parse(response)['Lb_Job_List']['jobIds']
       rescue => e
         @logger.warn "Got exception parsing response: #{e.message}"
-        @logger.debug "Backtrace:\n#{e.backtrace}"
+        @logger.debug "Backtrace:\n#{e.backtrace.join "\n"}"
         @logger.debug "Response:\n#{response}"
         []
       end
@@ -188,7 +188,7 @@ module OpenShift
         (JSON.parse(get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}"))['pool']['services'] || []).map {|p| p['name']}
       rescue => e
         @logger.warn "Got exception while getting pool members: #{e.message}"
-        @logger.debug "Backtrace:\n#{e.backtrace}"
+        @logger.debug "Backtrace:\n#{e.backtrace.join "\n"}"
         []
       end
     end

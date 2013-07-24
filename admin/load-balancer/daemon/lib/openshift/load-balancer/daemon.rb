@@ -116,7 +116,7 @@ module OpenShift
         end
       rescue => e
         @logger.warn "Got an exception: #{e.message}"
-        @logger.debug "Backtrace:\n#{e.backtrace}"
+        @logger.debug "Backtrace:\n#{e.backtrace.join "\n"}"
       end
     end
 
@@ -126,7 +126,7 @@ module OpenShift
         @lb_controller.update
       rescue => e
         @logger.warn "Got an exception: #{e.message}"
-        @logger.debug "Backtrace:\n#{e.backtrace}"
+        @logger.debug "Backtrace:\n#{e.backtrace.join "\n"}"
       end
     end
 
