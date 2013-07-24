@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.14
+Version: 0.15
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,12 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Wed Jul 24 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.15-1
+- Use Logger for output (miciah.masters@gmail.com)
+- Make model initialize methods more consistent (miciah.masters@gmail.com)
+- controllers/lbaas.rb: Fix grammar in a comment (miciah.masters@gmail.com)
+- controllers/lbaas.rb: More verbosity in initialize (miciah.masters@gmail.com)
+
 * Tue Jul 23 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.14-1
 - controllers/lbaas.rb: Fix another typo (miciah.masters@gmail.com)
 
