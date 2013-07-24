@@ -384,10 +384,10 @@ module OpenShift
       # [Operation] -> [Operation], [Operation]
       ready_ops, @ops = @ops.partition {|op| op.jobids.empty? && op.blocked_on_cnt.zero?}
 
-      # TODO: Delete pairs of Operation objects that cancel out (e.g.,
-      # an :add_pool_member and a :delete_pool_member operation that
-      # for the same member, when neither operation has been submitted
-      # or blocks another operation).
+      # TODO: Delete pairs of Operation objects that cancel out (e.g., an
+      # :add_pool_member and a :delete_pool_member operation for the same
+      # member, when neither operation has been submitted or blocks another
+      # operation).
 
       # Combine similar operations, such as two :add_pool_member
       # operations that affect the same pool.
