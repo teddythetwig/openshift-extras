@@ -99,7 +99,7 @@ module OpenShift
       @foo = "some temporary token or connection object"
     end
 
-    def initialize host=nil, user=nil, passwd=nil
+    def initialize host, user, passwd
       @host, @user, @passwd = host, user, passwd
       puts "do initialization stuff"
     end

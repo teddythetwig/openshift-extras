@@ -137,7 +137,7 @@ module OpenShift
       read_config
 
       $stderr.print "Connecting to F5 BIG-IP at host #{@bigip_host}...\n"
-      @lb_model = lb_model_class.new
+      @lb_model = lb_model_class.new @bigip_host, @bigip_username, @bigip_password
       @lb_model.authenticate @bigip_host, @bigip_username, @bigip_password
 
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
