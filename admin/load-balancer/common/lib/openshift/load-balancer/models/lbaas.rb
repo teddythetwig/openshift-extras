@@ -304,8 +304,8 @@ module OpenShift
       @keystone_token
     end
 
-    def initialize host, tenant, timeout=60, open_timeout=30
-      @host, @tenant, @timeout, @open_timeout = host, tenant, timeout, open_timeout
+    def initialize host, tenant, timeout, open_timeout, logger
+      @host, @tenant, @timeout, @open_timeout, @logger = host, tenant, timeout, open_timeout, logger
     end
 
   end
