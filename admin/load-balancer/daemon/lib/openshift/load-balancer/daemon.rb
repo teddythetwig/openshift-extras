@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'logger'
 require 'parseconfig'
 require 'stomp'
 require 'timeout'
@@ -15,8 +16,6 @@ module OpenShift
   # OpenShift::LoadBalancerController object.
   #
   class LoadBalancerConfigurationDaemon
-    attr_accessor :lb, :aq if @debug
-
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
 
@@ -29,6 +28,9 @@ module OpenShift
       @monitor_path_format = cfg['MONITOR_PATH']
 
       @update_interval = (cfg['UPDATE_INTERVAL'] || 5).to_i
+
+      @logfile = cfg['LOGFILE'] || '/var/log/openshift/load-balancer-daemon.log'
+      @loglevel = cfg['LOGLEVEL'] || 'debug'
 
       # @lb_model and instances thereof should not be used except to
       # pass an instance of @lb_model_class to an instance of
@@ -49,34 +51,48 @@ module OpenShift
       else
         raise StandardError.new 'No load-balancer configured.'
       end
-
-      @debug = cfg['DEBUG'] == 'true'
     end
 
     def initialize
       read_config
 
-      $stderr.print "Initializing load-balancer controller...\n"
-      @lb_controller = @lb_controller_class.new @lb_model_class
-      $stderr.print "Found #{@lb_controller.pools.length} pools:\n"
-      $stderr.print @lb_controller.pools.map{|k,v|"  #{k} (#{v.members.length} members)\n"}.join
+      @logger = Logger.new @logfile
+      @logger.level = case @loglevel
+                      when 'debug'
+                        Logger::DEBUG
+                      when 'info'
+                        Logger::INFO
+                      when 'warn'
+                        Logger::WARN
+                      when 'error'
+                        Logger::ERROR
+                      when 'fatal'
+                        Logger::FATAL
+                      else
+                        raise StandardError.new "Invalid LOGLEVEL value: #{@loglevel}"
+                      end
 
-      $stderr.print "Connecting to #{@host}:#{@port} as user #{@user}...\n"
+      @logger.info "Initializing load-balancer controller..."
+      @lb_controller = @lb_controller_class.new @lb_model_class, @logger
+      @logger.info "Found #{@lb_controller.pools.length} pools:\n" +
+                   @lb_controller.pools.map{|k,v|"  #{k} (#{v.members.length} members)"}.join("\n")
+
+      @logger.info "Connecting to #{@host}:#{@port} as user #{@user}..."
       @aq = Stomp::Connection.open @user, @password, @host, @port, true
 
-      $stderr.print "Subscribing to #{@destination}...\n"
+      @logger.info "Subscribing to #{@destination}..."
       @aq.subscribe @destination, { :ack => 'client' }
 
       @last_update = Time.now
     end
 
     def listen
-      $stderr.print "Listening...\n"
+      @logger.info "Listening..."
       while true
         begin
           msg = nil
           Timeout::timeout(@update_interval) { msg = @aq.receive }
-          puts 'Received message:', '#v+', msg.body, '#v-' if @debug
+          @logger.debug ['Received message:', '#v+', msg.body, '#v-'].join "\n"
           handle YAML.load(msg.body)
           @aq.ack msg.headers['message-id']
           update if Time.now - @last_update >= @update_interval
@@ -99,8 +115,8 @@ module OpenShift
           remove_gear event[:app_name], event[:namespace], event[:public_address], event[:public_port]
         end
       rescue => e
-        $stderr.puts "Got an exception: #{e.message}"
-        $stderr.puts "Backtrace: #{e.backtrace}"
+        @logger.warn "Got an exception: #{e.message}"
+        @logger.debug "Backtrace:\n#{e.backtrace}"
       end
     end
 
@@ -109,8 +125,8 @@ module OpenShift
       begin
         @lb_controller.update
       rescue => e
-        $stderr.puts "Got an exception: #{e.message}"
-        $stderr.puts "Backtrace: #{e.backtrace}"
+        @logger.warn "Got an exception: #{e.message}"
+        @logger.debug "Backtrace:\n#{e.backtrace}"
       end
     end
 
@@ -141,21 +157,21 @@ module OpenShift
 
       monitor_name = generate_monitor_name app_name, namespace
       if @lb_controller.monitors.include? monitor_name
-        $stderr.print "Using existing monitor: #{monitor_name}"
+        @logger.info "Using existing monitor: #{monitor_name}"
       else
         monitor_path = generate_monitor_path app_name, namespace
         unless monitor_name.nil? or monitor_name.empty? or monitor_path.nil? or monitor_path.empty?
-          $stderr.print "Creating new monitor #{monitor_name} with path #{monitor_path}\n"
+          @logger.info "Creating new monitor #{monitor_name} with path #{monitor_path}"
           @lb_controller.create_monitor monitor_name, monitor_path, '1'
         end
       end
 
-      $stderr.print "Creating new pool: #{pool_name}\n"
+      @logger.info "Creating new pool: #{pool_name}"
       @lb_controller.create_pool pool_name, monitor_name
 
       route_name = generate_route_name app_name, namespace
       route = '/' + app_name
-      $stderr.print "Creating new routing rule #{route_name} for route #{route} to pool #{pool_name}\n"
+      @logger.info "Creating new routing rule #{route_name} for route #{route} to pool #{pool_name}"
       @lb_controller.create_route pool_name, route_name, route
     end
 
@@ -165,22 +181,22 @@ module OpenShift
       raise StandardError.new "Deleting application #{app_name} for which no pool exists" unless @lb_controller.pools.include? pool_name
 
       route_name = generate_route_name app_name, namespace
-      $stderr.print "Deleting routing rule: #{route_name}\n"
+      @logger.info "Deleting routing rule: #{route_name}"
       @lb_controller.delete_route pool_name, route_name
 
-      $stderr.print "Deleting empty pool: #{pool_name}\n"
+      @logger.info "Deleting empty pool: #{pool_name}"
       @lb_controller.delete_pool pool_name
     end
 
     def add_gear app_name, namespace, gear_host, gear_port
       pool_name = generate_pool_name app_name, namespace
-      $stderr.print "Adding new member #{gear_host}:#{gear_port} to pool #{pool_name}\n"
+      @logger.info "Adding new member #{gear_host}:#{gear_port} to pool #{pool_name}"
       @lb_controller.pools[pool_name].add_member gear_host, gear_port.to_i
     end
 
     def remove_gear app_name, namespace, gear_host, gear_port
       pool_name = generate_pool_name app_name, namespace
-      $stderr.print "Deleting member #{gear_host}:#{gear_port} from pool #{pool_name}\n"
+      @logger.info "Deleting member #{gear_host}:#{gear_port} from pool #{pool_name}"
       @lb_controller.pools[pool_name].delete_member gear_host, gear_port.to_i
     end
 

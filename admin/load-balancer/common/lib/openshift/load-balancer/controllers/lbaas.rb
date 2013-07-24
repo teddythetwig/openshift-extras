@@ -156,8 +156,6 @@ module OpenShift
       @lbaas_keystone_tenant = cfg['LBAAS_KEYSTONE_TENANT'] || 'lbms'
 
       @virtual_server_name = cfg['VIRTUAL_SERVER']
-
-      @debug = cfg['DEBUG'] == 'true'
     end
 
     # Set the @blocked_on_cnt of the given Operation to the size of the given
@@ -184,14 +182,14 @@ module OpenShift
 
     def reap_op_if_no_remaining_tasks op
       if op.jobids.empty?
-        $stderr.puts "Deleting completed operation: #{op}."
+        @logger.info "Deleting completed operation: #{op}."
         reap_op op
       end
     end
 
     def cancel_op op
       op.blocked_ops.each {|op| cancel_op op}
-      $stderr.puts "Cancelling operation: #{op}."
+      @logger.info "Cancelling operation: #{op}."
       @ops.delete op
     end
 
@@ -400,23 +398,23 @@ module OpenShift
       # Submit ready operations to the load balancer.
       ready_ops.each do |op|
         begin
-          $stderr.puts "Submitting operation to LBaaS: #{op}."
+          @logger.info "Submitting operation to LBaaS: #{op}."
           op.jobids = @lb_model.send op.type, *op.operands
-          $stderr.puts "Got back jobids #{op.jobids.join ', '}."
+          @logger.info "Got back jobids #{op.jobids.join ', '}."
 
           # In case the operation generates no jobs and is immediately done, we
           # must reap it now because there will be no completion of a job to
           # trigger the reaping.
           reap_op_if_no_remaining_tasks op
         rescue => e
-          $stderr.puts "Got exception: #{e.message}"
-          $stderr.puts 'Backtrace:', e.backtrace
+          @logger.warn "Got exception: #{e.message}"
+          @logger.debug "Backtrace:\n#{e.backtrace}"
 
-          $stderr.puts "Cancelling the operation and any operations that it blocks..."
+          @logger.info "Cancelling the operation and any operations that it blocks..."
 
           cancel_op op
 
-          $stderr.puts "Done."
+          @logger.info "Done."
         end
       end
     end
@@ -435,7 +433,7 @@ module OpenShift
       jobs = submitted_ops.map {|op| op.jobids.map {|id| [op,id]}}.flatten(1)
       # [Operation] -> [[Operation,String]]
 
-      $stderr.puts "Polling #{jobs.length} active jobs: #{jobs.map {|op,id| id}.join ', '}" unless jobs.empty?
+      @logger.info "Polling #{jobs.length} active jobs: #{jobs.map {|op,id| id}.join ', '}" unless jobs.empty?
 
       jobs.each do |op,id|
         status = @lb_model.get_job_status id
@@ -447,41 +445,43 @@ module OpenShift
 
           # TODO: validate that status['requestBody'] is consistent with op.
 
-          $stderr.puts "LBaaS reports job #{id} completed."
+          @logger.info "LBaaS reports job #{id} completed."
           op.jobids.delete id
           reap_op_if_no_remaining_tasks op
         when 'FAILED'
-          $stderr.puts "LBaaS reports job #{id} failed."
-          $stderr.puts "Following are the job details from LBaaS:", status.pretty_inspect
-          $stderr.puts "Cancelling associated operation and any operations that it blocks..."
+          @logger.warn "LBaaS reports job #{id} failed."
+          @logger.info "Following are the job details from LBaaS:\n" + status.pretty_inspect
+          @logger.info "Cancelling associated operation and any operations that it blocks..."
 
           cancel_op op
 
-          $stderr.puts "Done."
+          @logger.info "Done."
         else
           raise LBControllerException.new "Got unknown status #{status['Tenant_Job_Details']['status']} for status job #{id}."
         end
       end
     end
 
-    def initialize lb_model_class
+    def initialize lb_model_class, logger
       read_config
 
-      @lb_model = lb_model_class.new @lbaas_host, @lbaas_tenant, @lbaas_timeout.to_i, @lbaas_open_timeout.to_i
+      @logger = logger
 
-      $stderr.print "Authenticating with keystone at host #{@lbaas_keystone_host}...\n"
+      @lb_model = lb_model_class.new @lbaas_host, @lbaas_tenant, @lbaas_timeout.to_i, @lbaas_open_timeout.to_i, @logger
+
+      @logger.info "Authenticating with keystone at host #{@lbaas_keystone_host}..."
       @lb_model.authenticate @lbaas_keystone_host, @lbaas_keystone_username, @lbaas_keystone_password, @lbaas_keystone_tenant
 
       # If the pool has been created or is being created in the load balancer, it will be in @pools.
-      $stderr.print "Requesting list of pools from LBaaS...\n"
+      @logger.info "Requesting list of pools from LBaaS..."
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
 
       # If the route is already created or is being created in the load balancer, it will be in @routes.
-      $stderr.print "Requesting list of routing rules from LBaaS...\n"
+      @logger.info "Requesting list of routing rules from LBaaS..."
       @routes = @lb_model.get_active_route_names
 
       # If the monitor is already created or is being created in the load balancer, it will be in @monitors.
-      $stderr.print "Requesting list of monitors from LBaaS...\n"
+      @logger.info "Requesting list of monitors from LBaaS..."
       @monitors = @lb_model.get_monitor_names
 
       # If an Operation has been created but not yet completed (whether

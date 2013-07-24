@@ -51,9 +51,9 @@ module OpenShift
       begin
         JSON.parse(response)['Lb_Job_List']['jobIds']
       rescue => e
-        $stderr.puts "Got exception parsing response: #{e.message}"
-        $stderr.puts "Backtrace: #{e.backtrace}"
-        $stderr.puts "Response: #{response}"
+        @logger.warn "Got exception parsing response: #{e.message}"
+        @logger.debug "Backtrace:\n#{e.backtrace}"
+        @logger.debug "Response:\n#{response}"
         []
       end
     end
@@ -187,8 +187,8 @@ module OpenShift
       begin
         (JSON.parse(get("http://#{@host}/loadbalancers/tenant/#{@tenant}/pools/#{pool_name}"))['pool']['services'] || []).map {|p| p['name']}
       rescue => e
-        $stderr.puts "Got exception while getting pool members: #{e.message}"
-        $stderr.puts 'Backtrace:', e.backtrace
+        @logger.warn "Got exception while getting pool members: #{e.message}"
+        @logger.debug "Backtrace:\n#{e.backtrace}"
         []
       end
     end
@@ -244,7 +244,7 @@ module OpenShift
     # to twice the timeout.
     def maybe_reauthenticate
       if @keystone_token_expiration < Time.now + 2*@timeout
-        $stderr.puts "Permanent token will expire soon.  Re-authenticating..."
+        @logger.info "Permanent token will expire soon.  Re-authenticating..."
         authenticate @keystone_host, @keystone_username, @keystone_password, @keystone_tenant
       end
     end
@@ -261,7 +261,7 @@ module OpenShift
       # requesting the temporary token.
       @keystone_token = nil
 
-      $stderr.puts "Requesting temporary token from keystone..."
+      @logger.info "Requesting temporary token from keystone..."
       response = post("http://#{keystone_host}/v2.0/tokens",
                       {
                         :auth => {
@@ -274,9 +274,9 @@ module OpenShift
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
-      $stderr.puts "Got temporary token: #{@keystone_token}"
+      @logger.info "Got temporary token: #{@keystone_token}"
 
-      $stderr.puts "Requesting list of keystone tenants..."
+      @logger.info "Requesting list of keystone tenants..."
       response = get "http://#{keystone_host}/v2.0/tenants"
       raise LBModelException.new "Expected HTTP 200 but got #{response.code} instead" unless response.code == 200
 
@@ -284,7 +284,7 @@ module OpenShift
       tenant = tenants.find {|t| t['name'] == keystone_tenant} or raise LBModelException.new "Keystone tenant not found: #{keystone_tenant}"
       tenant_id = tenant['id'] or raise LBModelException.new "Could not find tenantId for keystone tenant: #{keystone_tenant}"
 
-      $stderr.puts "Requesting permanent token from keystone..."
+      @logger.info "Requesting permanent token from keystone..."
       response = post("http://#{keystone_host}/v2.0/tokens",
                       {
                         :auth => {
@@ -300,7 +300,7 @@ module OpenShift
 
       @keystone_token = JSON.parse(response)['access']['token']['id']
       @keystone_token_expiration = Time.parse JSON.parse(response)['access']['token']['expires']
-      $stderr.puts "Got permanent token: #{@keystone_token} with expiration #{@keystone_token_expiration.to_s}"
+      @logger.info "Got permanent token: #{@keystone_token} with expiration #{@keystone_token_expiration.to_s}"
       @keystone_token
     end
 

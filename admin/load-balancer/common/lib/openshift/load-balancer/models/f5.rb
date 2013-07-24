@@ -105,8 +105,8 @@ module OpenShift
                                 ['System.Session', 'LocalLB.Pool', 'LocalLB.VirtualServer', 'LocalLB.ProfileHttpClass', 'LocalLB.Monitor']).get_interfaces
     end
 
-    def initialize host, user, passwd
-      @host, @user, @passwd = host, user, passwd
+    def initialize host, user, passwd, logger
+      @host, @user, @passwd, @logger = host, user, passwd, logger
     end
 
   end

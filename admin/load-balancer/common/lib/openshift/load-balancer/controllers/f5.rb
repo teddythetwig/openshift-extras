@@ -56,7 +56,6 @@ module OpenShift
 
     attr_reader :pending_add_member_ops, :pending_delete_member_ops
     attr_reader :routes, :active_routes
-    attr_accessor :bigip if @debug
 
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
@@ -66,8 +65,6 @@ module OpenShift
       @bigip_password = cfg['BIGIP_PASSWORD'] || 'passwd'
 
       @virtual_server_name = cfg['VIRTUAL_SERVER']
-
-      @debug = cfg['DEBUG'] == 'true'
     end
 
     def create_pool pool_name, monitor_name=nil
@@ -133,11 +130,13 @@ module OpenShift
       @pending_delete_member_ops = []
     end
 
-    def initialize lb_model_class
+    def initialize lb_model_class, logger
       read_config
 
-      $stderr.print "Connecting to F5 BIG-IP at host #{@bigip_host}...\n"
-      @lb_model = lb_model_class.new @bigip_host, @bigip_username, @bigip_password
+      @logger = logger
+
+      @logger.info "Connecting to F5 BIG-IP at host #{@bigip_host}..."
+      @lb_model = lb_model_class.new @bigip_host, @bigip_username, @bigip_password, @logger
       @lb_model.authenticate @bigip_host, @bigip_username, @bigip_password
 
       @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
