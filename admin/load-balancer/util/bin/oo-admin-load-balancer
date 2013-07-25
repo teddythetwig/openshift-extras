@@ -16,13 +16,14 @@
 #++
 
 require 'rubygems'
+require 'logger'
 require 'parseconfig'
 
 # Initialize the controller lazily, so we initialize it exactly zero
 # times if we never use it and exactly one time if we do use it.
 class LazyLBController
   def method_missing m, *args, &block
-    @lb_controller ||= @lb_controller_class.new @lb_model_class
+    @lb_controller ||= @lb_controller_class.new @lb_model_class, Logger.new(STDOUT)
     @lb_controller.send m, *args, &block
   end
 
