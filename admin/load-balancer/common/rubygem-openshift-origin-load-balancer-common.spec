@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.17
+Version: 0.18
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,9 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Fri Jul 26 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.18-1
+- models/lbaas.rb: Fix escaping in iRule (miciah.masters@gmail.com)
+
 * Thu Jul 25 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.17-1
 - models/lbaas.rb: Fix iRules template (miciah.masters@gmail.com)
 
