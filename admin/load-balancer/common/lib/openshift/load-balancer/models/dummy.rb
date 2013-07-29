@@ -1,3 +1,5 @@
+require 'openshift/load-balancer/models/load_balancer'
+
 module OpenShift
 
   # == Example load-balancer model class
