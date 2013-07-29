@@ -85,7 +85,7 @@ module OpenShift
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
 
-    def delete_pool_members pool_name, address, port
+    def delete_pool_member pool_name, address, port
       @logger.debug "delete member #{address}:#{port} from pool #{pool_name}"
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
