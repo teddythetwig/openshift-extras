@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'f5-icontrol'
 require 'parseconfig'
 require 'openshift/load-balancer/controllers/load_balancer'
 require 'openshift/load-balancer/models/load_balancer'
