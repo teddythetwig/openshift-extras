@@ -4,7 +4,7 @@
 %endif
 Summary:       OpenShift utilities for load-balancer integration
 Name:          openshift-origin-load-balancer-util
-Version: 0.5
+Version: 0.6
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -37,6 +37,9 @@ cp bin/oo-* bin/openshift-load-balancer-daemon %{buildroot}%{_sbindir}/
 %post
 
 %changelog
+* Mon Jul 29 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.6-1
+- Expose dummy model (miciah.masters@gmail.com)
+
 * Thu Jul 25 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.5-1
 - oo-admin-load-balancer: Update for logging changes (miciah.masters@gmail.com)
 
