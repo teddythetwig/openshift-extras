@@ -11,7 +11,7 @@
 
 Summary:       OpenShift daemon for load-balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.6
+Version: 0.7
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -69,6 +69,9 @@ cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
 
 %changelog
+* Mon Jul 29 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.7-1
+- Expose dummy model (miciah.masters@gmail.com)
+
 * Thu Jul 25 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.6-1
 - daemon.rb: delete_pool even if delete_route fails (miciah.masters@gmail.com)
 
