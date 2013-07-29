@@ -20,6 +20,13 @@ in this repository.  Edit /etc/openshift/load-balancer.conf to either "f5" or
 "lbaas" and then following the appropriate module-specific configuration
 described below.
 
+For testing purposes, a dummy model, which merely prints actions that
+a normal model performs rather than performing actions itself, is also
+included.  If you specify the "dummy" module, then you will get the
+dummy model with the F5 controller; if you specify the "dummy_async"
+module, then you will get the dummy model with the LBaaS asynchronous
+controller.
+
 Using F5 BIG-IP LTM
 -------------------
 

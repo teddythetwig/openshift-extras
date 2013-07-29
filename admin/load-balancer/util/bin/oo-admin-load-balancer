@@ -48,6 +48,18 @@ class LazyLBController
 
       @lb_controller_class = OpenShift::F5LoadBalancerController
       @lb_model_class = OpenShift::F5LoadBalancerModel
+    when 'dummy'
+      require 'openshift/load-balancer/models/dummy'
+      require 'openshift/load-balancer/controllers/f5'
+
+      @lb_model_class = OpenShift::DummyLoadBalancerModel
+      @lb_controller_class = OpenShift::F5LoadBalancerController
+    when 'dummy_async'
+      require 'openshift/load-balancer/models/dummy'
+      require 'openshift/load-balancer/controllers/lbaas'
+
+      @lb_model_class = OpenShift::DummyLoadBalancerModel
+      @lb_controller_class = OpenShift::AsyncLoadBalancerController
     else
       raise StandardError.new 'No valid setting for LOAD_BALANCER was found in /etc/openshift/load-balancer.conf'
     end
