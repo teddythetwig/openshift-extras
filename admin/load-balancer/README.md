@@ -74,7 +74,7 @@ Pool and Route Names
 --------------------
 By default, new pools will be created with the name
 "pool_ose_{appname}_{namespace}_80" while new routes will be created
-with the name "irule_ose_{appname}_{namespace}.  You can override these
+with the name "irule_ose_{appname}_{namespace}."  You can override these
 defaults by setting appropriate values for the POOL_NAME and ROUTE_NAME
 settings, respectively.  The values for these settings should contain
 the following formats so that each application gets its own uniquely
