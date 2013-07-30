@@ -24,6 +24,8 @@ module OpenShift
       @host = cfg['ACTIVEMQ_HOST'] || 'activemq.example.com'
       @port = (cfg['ACTIVEMQ_PORT'] || 61613).to_i
       @destination = cfg['ACTIVEMQ_TOPIC'] || '/topic/routinginfo'
+      @pool_name_format = cfg['POOL_NAME'] || 'pool_ose_%a_%n_80'
+      @route_name_format = cfg['ROUTE_NAME'] || 'irule_ose_%a_%n'
       @monitor_name_format = cfg['MONITOR_NAME']
       @monitor_path_format = cfg['MONITOR_PATH']
 
@@ -143,11 +145,11 @@ module OpenShift
     end
 
     def generate_pool_name app_name, namespace
-      "pool_ose_#{app_name}_#{namespace}_80"
+      @pool_name_format.gsub /%./, '%a' => app_name, '%n' => namespace
     end
 
     def generate_route_name app_name, namespace
-      "irule_ose_#{app_name}_#{namespace}"
+      @route_name_format.gsub /%./, '%a' => app_name, '%n' => namespace
     end
 
     def generate_monitor_name app_name, namespace

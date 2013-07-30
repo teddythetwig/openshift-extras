@@ -70,6 +70,17 @@ LBAAS_OPEN_TIMEOUT, LBAAS_KEYSTONE_HOST, LBAAS_KEYSTONE_USERNAME,
 LBAAS_KEYSTONE_PASSWORD, and LBAAS_KEYSTONE_TENANT, to match your LBaaS
 configuration.
 
+Pool and Route Names
+--------------------
+By default, new pools will be created with the name
+"pool_ose_{appname}_{namespace}_80" while new routes will be created
+with the name "irule_ose_{appname}_{namespace}.  You can override these
+defaults by setting appropriate values for the POOL_NAME and ROUTE_NAME
+settings, respectively.  The values for these settings should contain
+the following formats so that each application gets its own uniquely
+named pool and routing rule: %a is expanded to the name of the
+application, and %n is expanded to the application's namespace.
+
 Monitors
 --------
 The F5 and LBaaS backends can add an existing monitor to newly created pools.
@@ -77,7 +88,9 @@ Set the MONITOR_NAME to the name of the monitor you would like to use, and set
 MONITOR_PATH to the pathname to use for the monitor, or leave either option
 unspecified to disable the monitor functionality.
 
-MONITOR_NAME and MONITOR_PATH both can contain formats: %a is expanded to the
-name of the application, and %n is expanded to the application's namespace.
-The daemon will automatically create a new monitor when MONITOR_NAME expands
-a string that does not match the name of any existing monitor.
+As with POOL_NAME and ROUTE_NAME, MONITOR_NAME and MONITOR_PATH both can
+contain %a and %n formats, which are expanded the same way.  Unlike
+POOL_NAME and ROUTE_NAME, you may or may not want to re-use the same
+monitor for different applications.  The daemon will automatically
+create a new monitor when MONITOR_NAME expands a string that does not
+match the name of any existing monitor.
