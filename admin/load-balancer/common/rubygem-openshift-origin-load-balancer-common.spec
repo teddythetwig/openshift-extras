@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.23
+Version: 0.24
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,9 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Tue Jul 30 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.24-1
+- Make pool and route names configurable (miciah.masters@gmail.com)
+
 * Mon Jul 29 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.23-1
 - models/dummy.rb Fix delete_pool_members (miciah.masters@gmail.com)
 
