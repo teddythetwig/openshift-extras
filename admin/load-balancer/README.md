@@ -86,7 +86,9 @@ Monitors
 The F5 and LBaaS backends can add an existing monitor to newly created pools.
 Set the MONITOR_NAME to the name of the monitor you would like to use, and set
 MONITOR_PATH to the pathname to use for the monitor, or leave either option
-unspecified to disable the monitor functionality.
+unspecified to disable the monitor functionality.  Set MONITOR_UP_CODE
+to the code that indicates that a pool member is up, or leave
+MONITOR_UP_CODE unset to use the default value of "1."
 
 As with POOL_NAME and ROUTE_NAME, MONITOR_NAME and MONITOR_PATH both can
 contain %a and %n formats, which are expanded the same way.  Unlike
@@ -94,3 +96,9 @@ POOL_NAME and ROUTE_NAME, you may or may not want to re-use the same
 monitor for different applications.  The daemon will automatically
 create a new monitor when MONITOR_NAME expands a string that does not
 match the name of any existing monitor.
+
+It is expected that for each pool member, the load balancer will send
+a GET request to the resource identified on that host by the value of
+MONITOR_PATH for the associated monitor, and that the host will respond
+with the value of MONITOR_UP_CODE if the host is up or some other
+response if the host is not up.
