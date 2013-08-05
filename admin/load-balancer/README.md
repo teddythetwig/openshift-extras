@@ -97,6 +97,10 @@ Set MONITOR_TYPE to either "http-ecv" or "https-ecv" depending on
 whether you want to use HTTP or HTTPS for the monitor, leave
 MONITOR_TYPE unset to use the default value of "http-ecv."
 
+Set MONITOR_INTERVAL to the interval at which the monitor will send
+requests, or leave MONITOR_INTERVAL unset to use the default value of
+"10."
+
 As with POOL_NAME and ROUTE_NAME, MONITOR_NAME and MONITOR_PATH both can
 contain %a and %n formats, which are expanded the same way.  Unlike
 POOL_NAME and ROUTE_NAME, you may or may not want to re-use the same

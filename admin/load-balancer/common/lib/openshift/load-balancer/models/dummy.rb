@@ -60,8 +60,8 @@ module OpenShift
       [] # Return an array of String representing monitors.
     end
 
-    def create_monitor monitor_name, path, up_code, type
-      @logger.debug "create monitor #{monitor_name} using path #{path} with type #{type} where '#{up_code}' means up"
+    def create_monitor monitor_name, path, up_code, type, interval
+      @logger.debug "create monitor #{monitor_name} using path #{path} with type #{type} and interval #{interval} where '#{up_code}' means up"
       [] # If using AsyncLoadBalancerController, return an array of jobids.
     end
 

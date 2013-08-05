@@ -153,7 +153,7 @@ module OpenShift
     end
 
     # Returns [String] of job ids.
-    def create_monitor monitor_name, path, up_code, type
+    def create_monitor monitor_name, path, up_code, type, interval
       type = type == 'https-ecv' ? 'HTTPS' : 'HTTP-ECV'
       response = put("http://#{@host}/loadbalancers/tenant/#{@tenant}/monitors/#{monitor_name}",
                      {
@@ -162,7 +162,7 @@ module OpenShift
                          :type => type,
                          :send => "GET #{path}",
                          :rcv => up_code,
-                         :interval => '30',
+                         :interval => interval,
                          :timeout => '5',
                          :downtime => '12'
                        }
