@@ -11,7 +11,7 @@
 
 Summary:       OpenShift common code for load balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.25
+Version: 0.26
 Release:       1%{?dist}
 Group:         Development/Languages
 License:       ASL 2.0
@@ -73,6 +73,10 @@ mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 %config(noreplace) /etc/openshift/load-balancer.conf
 
 %changelog
+* Mon Aug 05 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.26-1
+- Make monitor interval configurable (miciah.masters@gmail.com)
+- Make monitor type configurable (miciah.masters@gmail.com)
+
 * Thu Aug 01 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.25-1
 - Make monitor up code configurable (miciah.masters@gmail.com)
 
