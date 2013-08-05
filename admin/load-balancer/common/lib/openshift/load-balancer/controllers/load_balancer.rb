@@ -57,7 +57,7 @@ module OpenShift
     def delete_route profile_name
     end
 
-    def create_monitor monitor_name, path, up_code
+    def create_monitor monitor_name, path, up_code, type
     end
 
     def delete_monitor monitor_name

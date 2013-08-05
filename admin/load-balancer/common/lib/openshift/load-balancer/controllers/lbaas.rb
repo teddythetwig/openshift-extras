@@ -345,12 +345,12 @@ module OpenShift
       @routes.delete route_name
     end
 
-    def create_monitor monitor_name, path, up_code
+    def create_monitor monitor_name, path, up_code, type
       raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
 
       # :create_monitor blocks
       # if a monitor of the same name is currently being deleted.
-      queue_op Operation.new(:create_monitor, [monitor_name, path, up_code]), @ops.select {|op| op.type == :delete_monitor_pool && op.operands[0] == monitor_name}
+      queue_op Operation.new(:create_monitor, [monitor_name, path, up_code, type]), @ops.select {|op| op.type == :delete_monitor_pool && op.operands[0] == monitor_name}
 
       @monitors.push monitor_name
     end

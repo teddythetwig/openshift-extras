@@ -104,10 +104,10 @@ module OpenShift
       @active_routes.delete route_name
     end
 
-    def create_monitor monitor_name, path, up_code
+    def create_monitor monitor_name, path, up_code, type
       raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
 
-      @lb_model.create_monitor monitor_name, path, up_code
+      @lb_model.create_monitor monitor_name, path, up_code, type
 
       @monitors.push monitor_name
     end

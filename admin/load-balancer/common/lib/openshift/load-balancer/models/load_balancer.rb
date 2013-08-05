@@ -89,7 +89,7 @@ module OpenShift
     end
 
     # create_monitor :: String, String, String, String -> undefined
-    def create_monitor monitor_name, path, up_code
+    def create_monitor monitor_name, path, up_code, type
     end
 
     # delete_monitor :: String -> undefined

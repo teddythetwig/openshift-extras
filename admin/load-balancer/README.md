@@ -84,11 +84,18 @@ application, and %n is expanded to the application's namespace.
 Monitors
 --------
 The F5 and LBaaS backends can add an existing monitor to newly created pools.
+The following settings control how these monitors are created.
+
 Set the MONITOR_NAME to the name of the monitor you would like to use, and set
 MONITOR_PATH to the pathname to use for the monitor, or leave either option
-unspecified to disable the monitor functionality.  Set MONITOR_UP_CODE
-to the code that indicates that a pool member is up, or leave
-MONITOR_UP_CODE unset to use the default value of "1."
+unspecified to disable the monitor functionality.
+
+Set MONITOR_UP_CODE to the code that indicates that a pool member is up,
+or leave MONITOR_UP_CODE unset to use the default value of "1."
+
+Set MONITOR_TYPE to either "http-ecv" or "https-ecv" depending on
+whether you want to use HTTP or HTTPS for the monitor, leave
+MONITOR_TYPE unset to use the default value of "http-ecv."
 
 As with POOL_NAME and ROUTE_NAME, MONITOR_NAME and MONITOR_PATH both can
 contain %a and %n formats, which are expanded the same way.  Unlike
