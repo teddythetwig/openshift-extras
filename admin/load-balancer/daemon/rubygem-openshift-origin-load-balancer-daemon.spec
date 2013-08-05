@@ -11,7 +11,7 @@
 
 Summary:       OpenShift daemon for load-balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.9
+Version: 0.10
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -69,6 +69,10 @@ cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
 
 %changelog
+* Mon Aug 05 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.10-1
+- Make monitor interval configurable (miciah.masters@gmail.com)
+- Make monitor type configurable (miciah.masters@gmail.com)
+
 * Thu Aug 01 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.9-1
 - Make monitor up code configurable (miciah.masters@gmail.com)
 
