@@ -75,9 +75,9 @@ module OpenShift
       @bigip['LocalLB.Monitor'].get_template_list.map {|template| template.template_name}
     end
 
-    def create_monitor monitor_name, path, up_code, type, interval
+    def create_monitor monitor_name, path, up_code, type, interval, timeout
       type = type == 'https-ecv' ? 'https' : 'http'
-      @bigip['LocalLB.Monitor'].create_template [{:template_name=>monitor_name, :template_type=>'TTYPE_HTTP'}], [{:parent_template=>type, :interval=>Integer(interval), :timeout=>5, :dest_ipport=>{:address_type=>'ATYPE_STAR_ADDRESS_STAR_PORT', :ipport=>{:address=>'0.0.0.0', :port=>0}}, :is_read_only=>false, :is_directly_usable=>true}]
+      @bigip['LocalLB.Monitor'].create_template [{:template_name=>monitor_name, :template_type=>'TTYPE_HTTP'}], [{:parent_template=>type, :interval=>Integer(interval), :timeout=>timeout, :dest_ipport=>{:address_type=>'ATYPE_STAR_ADDRESS_STAR_PORT', :ipport=>{:address=>'0.0.0.0', :port=>0}}, :is_read_only=>false, :is_directly_usable=>true}]
       @bigip['LocalLB.Monitor'].set_template_string_property [monitor_name, monitor_name], [{:type=>'STYPE_SEND', :value=>"GET #{path}\\r\\n"}, {:type=>'STYPE_RECEIVE', :value=>up_code}]
     end
 

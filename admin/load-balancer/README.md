@@ -101,6 +101,9 @@ Set MONITOR_INTERVAL to the interval at which the monitor will send
 requests, or leave MONITOR_INTERVAL unset to use the default value of
 "10."
 
+Set MONITOR_TIMEOUT to the monitor's timeout for its requests, or leave
+MONITOR_TIMEOUT unset to use the default value of "5."
+
 As with POOL_NAME and ROUTE_NAME, MONITOR_NAME and MONITOR_PATH both can
 contain %a and %n formats, which are expanded the same way.  Unlike
 POOL_NAME and ROUTE_NAME, you may or may not want to re-use the same

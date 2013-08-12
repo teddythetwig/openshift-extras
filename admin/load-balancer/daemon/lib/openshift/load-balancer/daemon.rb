@@ -31,6 +31,7 @@ module OpenShift
       @monitor_up_code = cfg['MONITOR_UP_CODE'] || '1'
       @monitor_type = cfg['MONITOR_TYPE'] || 'http-ecv'
       @monitor_interval = cfg['MONITOR_INTERVAL'] || '10'
+      @monitor_timeout = cfg['MONITOR_TIMEOUT'] || '5'
 
       @update_interval = (cfg['UPDATE_INTERVAL'] || 5).to_i
 
@@ -179,7 +180,7 @@ module OpenShift
         monitor_path = generate_monitor_path app_name, namespace
         unless monitor_name.nil? or monitor_name.empty? or monitor_path.nil? or monitor_path.empty?
           @logger.info "Creating new monitor #{monitor_name} with path #{monitor_path}"
-          @lb_controller.create_monitor monitor_name, monitor_path, @monitor_up_code, @monitor_type, @monitor_interval
+          @lb_controller.create_monitor monitor_name, monitor_path, @monitor_up_code, @monitor_type, @monitor_interval, @monitor_timeout
         end
       end
 
