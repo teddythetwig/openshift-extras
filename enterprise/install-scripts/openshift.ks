@@ -161,6 +161,12 @@
 #   other means.
 #CONF_NO_NTP=true
 
+# activemq_replicants / CONF_ACTIVEMQ_REPLICANTS
+#   Default: the value of activemq_hostname
+#   A comma-separated list of ActiveMQ broker replicants.  If you are
+#   not installing in a configuration with ActiveMQ replication, you can
+#   leave this setting at its default value.
+
 # Passwords used to secure various services. You are advised to specify
 # only alphanumeric values in this script as others may cause syntax
 # errors depending on context. If non-alphanumeric values are required,
@@ -170,6 +176,14 @@
 #   Default: randomized
 #   This is the admin password for the ActiveMQ admin console, which is
 #   not needed by OpenShift but might be useful in troubleshooting.
+#CONF_ACTIVEMQ_ADMIN_PASSWORD="ChangeMe"
+
+# activemq_amq_user_password / CONF_ACTIVEMQ_AMQ_USER_PASSWORD
+#   Default: password
+#   This is the password for the ActiveMQ amq user, which is
+#   used by ActiveMQ broker replicants to communicate with one another.
+#   The amq user is enabled only if replicants are specified using
+#   the activemq_replicants setting.
 #CONF_ACTIVEMQ_ADMIN_PASSWORD="ChangeMe"
 
 
@@ -1054,6 +1068,23 @@ EOF
   chkconfig mcollective on
 }
 
+generate_mcollective_pools_configuration()
+{
+  num_replicants=0
+  members=
+  for replicant in ${activemq_replicants//,/ }
+  do
+    let num_replicants=num_replicants+1
+    new_member="plugin.activemq.pool.${num_replicants}.host = ${replicant}
+plugin.activemq.pool.${num_replicants}.port = 61613
+plugin.activemq.pool.${num_replicants}.user = ${mcollective_user}
+plugin.activemq.pool.${num_replicants}.password = ${mcollective_password}
+"
+    members="${members}${new_member}"
+  done
+
+  printf 'plugin.activemq.pool.size = %d\n%s' "$num_replicants" "$members"
+}
 
 # Configure mcollective on the broker to use ActiveMQ.
 configure_mcollective_for_activemq_on_broker()
@@ -1074,11 +1105,7 @@ securityprovider=psk
 plugin.psk = asimplething
 
 connector = activemq
-plugin.activemq.pool.size = 1
-plugin.activemq.pool.1.host = ${activemq_hostname}
-plugin.activemq.pool.1.port = 61613
-plugin.activemq.pool.1.user = ${mcollective_user}
-plugin.activemq.pool.1.password = ${mcollective_password}
+$(generate_mcollective_pools_configuration)
 
 # Facts
 factsource = yaml
@@ -1109,11 +1136,7 @@ securityprovider = psk
 plugin.psk = asimplething
 
 connector = activemq
-plugin.activemq.pool.size = 1
-plugin.activemq.pool.1.host = ${activemq_hostname}
-plugin.activemq.pool.1.port = 61613
-plugin.activemq.pool.1.user = ${mcollective_user}
-plugin.activemq.pool.1.password = ${mcollective_password}
+$(generate_mcollective_pools_configuration)
 
 # Facts
 factsource = yaml
@@ -1129,6 +1152,26 @@ configure_activemq()
 {
   # Install the service.
   yum_install_or_exit -y activemq
+
+  networkConnectors=
+  authenticationUser_amq=
+  function allow_openwire() { false; }
+  for replicant in ${activemq_replicants//,/ }
+  do
+    if ! [ "$replicant" = "$activemq_hostname" ]
+    then
+      : ${networkConnectors:='        <networkConnectors>'$'\n'}
+      : ${authenticationUser_amq:="<authenticationUser username=\"amq\" password=\"${activemq_amq_user_password}\" groups=\"admins,everyone\" />"}
+      function allow_openwire() { true; }
+      networkConnectors="$networkConnectors          <networkConnector name=\"${activemq_hostname}-${replicant}\" duplex=\"true\" uri=\"static:(tcp://${replicant}:61616)\" userName=\"amq\" password=\"password\">"$'\n'
+      networkConnectors="$networkConnectors            <staticallyIncludedDestinations>"$'\n'
+      networkConnectors="$networkConnectors              <topic physicalName=\"mcollective.openshift.reply\" />"$'\n'
+      networkConnectors="$networkConnectors              <topic physicalName=\"mcollective.discovery.reply\" />"$'\n'
+      networkConnectors="$networkConnectors            </staticallyIncludedDestinations>"$'\n'
+      networkConnectors="$networkConnectors          </networkConnector>"$'\n'
+    fi
+  done
+  networkConnectors="${networkConnectors:+$networkConnectors    </networkConnectors>$'\n'}"
 
   cat <<EOF > /etc/activemq/activemq.xml
 <!--
@@ -1223,6 +1266,8 @@ configure_activemq()
             <kahaDB directory="\${activemq.data}/kahadb"/>
         </persistenceAdapter>
 
+$networkConnectors
+
         <!-- add users for mcollective -->
 
         <plugins>
@@ -1230,6 +1275,7 @@ configure_activemq()
           <simpleAuthenticationPlugin>
              <users>
                <authenticationUser username="${mcollective_user}" password="${mcollective_password}" groups="mcollective,everyone"/>
+               ${authenticationUser_amq}
                <authenticationUser username="admin" password="${activemq_admin_password}" groups="mcollective,admin,everyone"/>
              </users>
           </simpleAuthenticationPlugin>
@@ -1321,6 +1367,7 @@ EOF
 
   # Allow connections to ActiveMQ.
   lokkit --nostart --port=61613:tcp
+  allow_openwire && lokkit --nostart --port=61616:tcp
 
   # Configure ActiveMQ to start on boot.
   chkconfig activemq on
@@ -2075,11 +2122,21 @@ set_defaults()
   # Generate a random session secret for console sessions.
   broker && console_session_secret="${CONF_CONSOLE_SESSION_SECRET:-${randomized}}"
 
+  # If no list of replicants is provided, assume there is only one
+  # ActiveMQ host.
+  activemq_replicants="${CONF_ACTIVEMQ_REPLICANTS:-$activemq_hostname}"
+
   # Set default passwords
   #
   #   This is the admin password for the ActiveMQ admin console, which 
   #   is not needed by OpenShift but might be useful in troubleshooting.
   activemq && activemq_admin_password="${CONF_ACTIVEMQ_ADMIN_PASSWORD:-${randomized//[![:alnum:]]}}"
+
+  #   This is the password for the ActiveMQ amq user, which is used by
+  #   ActiveMQ broker replicants to communicate with one another.  The
+  #   amq user is enabled only if replicants are specified using the
+  #   activemq_replicants.setting
+  activemq && activemq_amq_user_password="${CONF_ACTIVEMQ_AMQ_USER_PASSWORD:-password}"
 
   #   This is the user and password shared between broker and node for
   #   communicating over the mcollective topic channels in ActiveMQ. 
