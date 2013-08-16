@@ -106,7 +106,14 @@ module OpenShift
                      {
                        :policy => {
                          :name => route_name,
-                         :rule => "{ when HTTP_REQUEST { if { [HTTP::uri] starts_with \"#{path}\" } { pool #{pool_name}; } } }"
+                         :rule => "{
+    when HTTP_REQUEST {
+        if { [HTTP::uri] starts_with \"#{path}\" } {
+            pool #{pool_name}
+            event disable
+        }
+    }
+}"
                        }
                      }.to_json)
       raise LBModelException.new "Expected HTTP 202 but got #{response.code} instead" unless response.code == 202
