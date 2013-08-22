@@ -205,6 +205,15 @@ module OpenShift
       ensure
         @logger.info "Deleting empty pool: #{pool_name}"
         @lb_controller.delete_pool pool_name
+
+        monitor_name = generate_monitor_name app_name, namespace
+        # Check that the monitor exists and is specific to the
+        # application (as indicated by having the application's name and
+        # namespace in the monitor's name).
+        if @lb_controller.monitors.include?(monitor_name) && @monitor_name_format.match(/%a/) && @monitor_name_format.match(/%n/)
+          @logger.info "Deleting unused monitor: #{monitor_name}"
+          @lb_controller.delete_monitor monitor_name
+        end
       end
     end
 
