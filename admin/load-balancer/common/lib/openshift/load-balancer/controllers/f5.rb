@@ -23,8 +23,6 @@ module OpenShift
     # address:port to represent each pool member.
     #
     class Pool < LoadBalancerController::Pool
-      attr_reader :members, :name, :monitors
-
       def initialize lb_controller, lb_model, pool_name
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
         @members = @lb_model.get_pool_members pool_name
@@ -54,7 +52,6 @@ module OpenShift
     end
 
     attr_reader :pending_add_member_ops, :pending_delete_member_ops
-    attr_reader :routes, :active_routes
 
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')

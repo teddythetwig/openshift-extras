@@ -28,8 +28,6 @@ module OpenShift
     # when the pool has only just been created on the load balancer.
     #
     class Pool < LoadBalancerController::Pool
-      attr_reader :members, :name
-
       def initialize lb_controller, lb_model, pool_name, request_members=true
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
         if request_members
@@ -141,7 +139,6 @@ module OpenShift
     end
 
     attr_reader :ops # [Operation]
-    attr_reader :routes, :active_routes, :monitors
 
     def read_config
       cfg = ParseConfig.new('/etc/openshift/load-balancer.conf')
