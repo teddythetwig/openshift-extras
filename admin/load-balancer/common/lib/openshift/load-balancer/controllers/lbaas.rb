@@ -38,7 +38,7 @@ module OpenShift
       end
 
       def members
-        @members ||= @lb_model.get_pool_members pool_name
+        @members ||= @lb_model.get_pool_members @name
       end
 
       # Add a member to the object's internal list of members.  This
