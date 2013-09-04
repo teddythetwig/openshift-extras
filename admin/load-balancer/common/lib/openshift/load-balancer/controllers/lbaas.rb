@@ -30,11 +30,15 @@ module OpenShift
     class Pool < LoadBalancerController::Pool
       def initialize lb_controller, lb_model, pool_name, request_members=true
         @lb_controller, @lb_model, @name = lb_controller, lb_model, pool_name
-        if request_members
-          @members = @lb_model.get_pool_members pool_name
-        else
-          @members = Array.new
-        end
+
+        # If we are not supposed to request members, set @members to an empty
+        # array now.  If we are supposed to request members, leave @members nil
+        # for now so that the members method will initialize it.
+        @members = Array.new unless request_members
+      end
+
+      def members
+        @members ||= @lb_model.get_pool_members pool_name
       end
 
       # Add a member to the object's internal list of members.  This
@@ -459,6 +463,30 @@ module OpenShift
       end
     end
 
+    # If a pool has been created or is being created in the load balancer, it will be in @pools.
+    def pools
+      @pools ||= begin
+        @logger.info "Requesting list of pools from LBaaS..."
+        Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
+      end
+    end
+
+    # If a route is already created or is being created in the load balancer, it will be in @routes.
+    def routes
+      @routes ||= begin
+        @logger.info "Requesting list of routing rules from LBaaS..."
+        @lb_model.get_active_route_names
+      end
+    end
+
+    # If a monitor is already created or is being created in the load balancer, it will be in @monitors.
+    def monitors
+      @monitors ||= begin
+        @logger.info "Requesting list of monitors from LBaaS..."
+        @lb_model.get_monitor_names
+      end
+    end
+
     def initialize lb_model_class, logger
       read_config
 
@@ -469,24 +497,15 @@ module OpenShift
       @logger.info "Authenticating with keystone at host #{@lbaas_keystone_host}..."
       @lb_model.authenticate @lbaas_keystone_host, @lbaas_keystone_username, @lbaas_keystone_password, @lbaas_keystone_tenant
 
-      # If the pool has been created or is being created in the load balancer, it will be in @pools.
-      @logger.info "Requesting list of pools from LBaaS..."
-      @pools = Hash[@lb_model.get_pool_names.map {|pool_name| [pool_name, Pool.new(self, @lb_model, pool_name)]}]
-
-      # If the route is already created or is being created in the load balancer, it will be in @routes.
-      @logger.info "Requesting list of routing rules from LBaaS..."
-      @routes = @lb_model.get_active_route_names
-
-      # If the monitor is already created or is being created in the load balancer, it will be in @monitors.
-      @logger.info "Requesting list of monitors from LBaaS..."
-      @monitors = @lb_model.get_monitor_names
-
       # If an Operation has been created but not yet completed (whether
       # because it is blocked on one or more other Operations, because
       # it has not been submitted to the load balancer, or because it
       # has been submitted but the load balancer has not yet reported
       # completion), it will be in @ops.
       @ops = []
+
+      # Leave @pools, @routes, and @monitors nil for now and let the
+      # methods of the same respective names initialize them lazily.
     end
   end
 
