@@ -357,7 +357,7 @@ module OpenShift
 
       # :delete_monitor blocks
       # if the monitor is being created.
-      queue_op Operation.new(:delete_monitor, [pool_name, route_name]), @ops.select {|op| op.type == :create_monitor && op.operands[0] == monitor_name}
+      queue_op Operation.new(:delete_monitor, [monitor_name]), @ops.select {|op| op.type == :create_monitor && op.operands[0] == monitor_name}
 
       @monitors.delete monitor_name
     end
