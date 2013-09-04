@@ -61,7 +61,12 @@ module OpenShift
     def create_monitor monitor_name, path, up_code, type, interval, timeout
     end
 
-    def delete_monitor monitor_name
+    # delete_monitor :: String, String -> undefined
+    # Note: The pool_name is optional but is required for some backends so that
+    # the daemon can specify an associated pool that must be deleted first.  In
+    # particular, the asynchronous controller used with the LBaaS model will
+    # make delete_monitor operations block on related delete_pool operations.
+    def delete_monitor monitor_name, pool_name=nil
     end
 
     # Push pending pool add_member and delete_member operations to the

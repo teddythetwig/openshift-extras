@@ -212,7 +212,10 @@ module OpenShift
         # namespace in the monitor's name).
         if @lb_controller.monitors.include?(monitor_name) && @monitor_name_format.match(/%a/) && @monitor_name_format.match(/%n/)
           @logger.info "Deleting unused monitor: #{monitor_name}"
-          @lb_controller.delete_monitor monitor_name
+          # We pass pool_name to delete_monitor because some backends need the
+          # name of the pool so that they will block the delete_monitor
+          # operation until any corresponding delete_pool operation completes.
+          @lb_controller.delete_monitor monitor_name, pool_name
         end
       end
     end
