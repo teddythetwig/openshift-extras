@@ -11,7 +11,7 @@
 
 Summary:       OpenShift daemon for load-balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.11
+Version: 0.12
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -69,6 +69,9 @@ cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
 
 %changelog
+* Wed Sep 04 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.12-1
+- Delete monitor on app delete if it's not shared (miciah.masters@gmail.com)
+
 * Mon Aug 12 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.11-1
 - Make monitor timeout configurable (miciah.masters@gmail.com)
 
