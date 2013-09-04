@@ -48,7 +48,7 @@ module OpenShift
       def add_member address, port
         member = address + ':' + port.to_s
 
-        raise LBControllerException.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if @members.include? member
+        raise LBControllerException.new "Adding gear #{member} to pool #{@name}, of which the gear is already a member" if members.include? member
 
         # :add_pool_member blocks
         # if the corresponding pool is being created,
@@ -58,7 +58,7 @@ module OpenShift
         #   deleted, and added again).
         @lb_controller.queue_op Operation.new(:add_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include?(op.type) && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
 
-        @members.push member
+        members.push member
       end
 
       # Remove a member from the object's internal list of members.
@@ -67,7 +67,7 @@ module OpenShift
       def delete_member address, port
         member = address + ':' + port.to_s
 
-        raise LBControllerException.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless @members.include? member
+        raise LBControllerException.new "Deleting gear #{member} from pool #{@name}, of which the gear is not a member" unless members.include? member
 
         # :delete_pool_member blocks
         # if the corresponding pool is being created,
@@ -77,7 +77,7 @@ module OpenShift
         #   deleted, added, and deleted again).
         @lb_controller.queue_op Operation.new(:delete_pool_member, [self.name, address, port.to_s]), @lb_controller.ops.select {|op| (op.type == :create_pool && op.operands[0] == self.name) || ([:add_pool_member, :delete_pool_member].include?(op.type) && op.operands[0] == self.name && op.operands[1] == address && op.operands[2] == port.to_s)}
 
-        @members.delete member
+        members.delete member
       end
     end
 
@@ -262,7 +262,7 @@ module OpenShift
     end
 
     def create_pool pool_name, monitor_name=nil
-      raise LBControllerException.new "Pool already exists: #{pool_name}" if @pools.include? pool_name
+      raise LBControllerException.new "Pool already exists: #{pool_name}" if pools.include? pool_name
 
       # :create_pool blocks
       # if the corresponding monitor is being created or
@@ -274,11 +274,11 @@ module OpenShift
       # are deleting pool of the same name.
       queue_op Operation.new(:create_pool, [pool_name, monitor_name]), @ops.select {|op| (op.type == :delete_pool && op.operands[0] == pool_name) || (op.type == :create_monitor && op.operands[0] == monitor_name)}
 
-      @pools[pool_name] = Pool.new self, @lb_model, pool_name, false
+      pools[pool_name] = Pool.new self, @lb_model, pool_name, false
     end
 
     def delete_pool pool_name
-      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless pools.include? pool_name
 
       raise LBControllerException.new "Deleting pool that is already being deleted: #{pool_name}" if @ops.detect {|op| op.type == :delete_pool && op.operands == [pool_name]}
 
@@ -303,13 +303,13 @@ module OpenShift
       # routes and pool members 
       queue_op Operation.new(:delete_pool, [pool_name]), @ops.select {|op| [:delete_route, :delete_pool_member, :create_pool].include?(op.type) && op.operands[0] == pool_name}
 
-      @pools.delete pool_name
+      pools.delete pool_name
     end
 
     def create_route pool_name, route_name, path
-      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless pools.include? pool_name
 
-      raise LBControllerException.new "Route already exists: #{route_name}" if @routes.include? route_name
+      raise LBControllerException.new "Route already exists: #{route_name}" if routes.include? route_name
 
       # :create_route blocks
       # if the corresponding pool is being created.
@@ -321,13 +321,13 @@ module OpenShift
       # :attach_route blocks on the :create_route operation we just queued.
       queue_op Operation.new(:attach_route, [route_name, @virtual_server_name]), @ops.select {|op| op.type == :create_route && op.operands[1] == route_name} if @virtual_server_name
 
-      @routes.push route_name
+      routes.push route_name
     end
 
     def delete_route pool_name, route_name
-      raise LBControllerException.new "Pool not found: #{pool_name}" unless @pools.include? pool_name
+      raise LBControllerException.new "Pool not found: #{pool_name}" unless pools.include? pool_name
 
-      raise LBControllerException.new "Route not found: #{route_name}" unless @routes.include? route_name
+      raise LBControllerException.new "Route not found: #{route_name}" unless routes.include? route_name
 
       # :detach_route blocks
       # if the route is being attached, or
@@ -343,28 +343,28 @@ module OpenShift
       #   (which can be the case if the same pool and route are being created, deleted, created, and deleted again).
       queue_op Operation.new(:delete_route, [pool_name, route_name]), @ops.select {|op| (op.type == :detach_route && op.operands[0] == route_name) || (op.type == :create_pool && op.operands[0] == pool_name) || (op.type == :create_route && op.operands[0] == pool_name && op.operands[1] == route_name)}
 
-      @routes.delete route_name
+      routes.delete route_name
     end
 
     def create_monitor monitor_name, path, up_code, type, interval, timeout
-      raise LBControllerException.new "Monitor already exists: #{monitor_name}" if @monitors.include? monitor_name
+      raise LBControllerException.new "Monitor already exists: #{monitor_name}" if monitors.include? monitor_name
 
       # :create_monitor blocks
       # if a monitor of the same name is currently being deleted.
       queue_op Operation.new(:create_monitor, [monitor_name, path, up_code, type, interval, timeout]), @ops.select {|op| op.type == :delete_monitor_pool && op.operands[0] == monitor_name}
 
-      @monitors.push monitor_name
+      monitors.push monitor_name
     end
 
     def delete_monitor monitor_name, pool_name=nil
-      raise LBControllerException.new "Monitor not found: #{monitor_name}" unless @monitors.include? monitor_name
+      raise LBControllerException.new "Monitor not found: #{monitor_name}" unless monitors.include? monitor_name
 
       # :delete_monitor blocks
       # if the corresponding pool is being deleted (if one is specified) or
       # if the monitor is being created.
       queue_op Operation.new(:delete_monitor, [monitor_name]), @ops.select {|op| (op.type == :create_monitor && op.operands[0] == monitor_name) || (pool_name && op.type == :delete_pool && op.operands[0] == pool_name)}
 
-      @monitors.delete monitor_name
+      monitors.delete monitor_name
     end
 
     # Update the load balancer with any queued updates.
@@ -464,7 +464,7 @@ module OpenShift
       end
     end
 
-    # If a pool has been created or is being created in the load balancer, it will be in @pools.
+    # If a pool has been created or is being created in the load balancer, it will be in pools.
     def pools
       @pools ||= begin
         @logger.info "Requesting list of pools from LBaaS..."
@@ -472,7 +472,7 @@ module OpenShift
       end
     end
 
-    # If a route is already created or is being created in the load balancer, it will be in @routes.
+    # If a route is already created or is being created in the load balancer, it will be in routes.
     def routes
       @routes ||= begin
         @logger.info "Requesting list of routing rules from LBaaS..."
@@ -480,7 +480,7 @@ module OpenShift
       end
     end
 
-    # If a monitor is already created or is being created in the load balancer, it will be in @monitors.
+    # If a monitor is already created or is being created in the load balancer, it will be in monitors.
     def monitors
       @monitors ||= begin
         @logger.info "Requesting list of monitors from LBaaS..."
