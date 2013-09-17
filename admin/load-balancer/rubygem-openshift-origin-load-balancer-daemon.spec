@@ -11,7 +11,7 @@
 
 Summary:       OpenShift daemon for load-balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.15
+Version: 0.16
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -83,6 +83,9 @@ cp -a init/* %{buildroot}/etc/rc.d/init.d/
 %attr(0750,-,-) %{_root_sbindir}/openshift-load-balancer-daemon
 
 %changelog
+* Tue Sep 17 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.16-1
+- Put load-balancer executables under root (miciah.masters@gmail.com)
+
 * Tue Sep 17 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.15-1
 - Merge load-balancer RPMs (miciah.masters@gmail.com)
 - Add export notice to load-balancer README.md (miciah.masters@gmail.com)
