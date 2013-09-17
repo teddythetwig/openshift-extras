@@ -52,13 +52,13 @@ gem build %{gem_name}.gemspec
 gem install -V \
         --local \
         --install-dir ./%{gem_dir} \
-        --bindir ./%{_bindir} \
+        --bindir ./%{_root_bindir} \
         --force %{gem_name}-%{version}.gem
 %{?scl:EOF}
 
 %install
-mkdir -p %{buildroot}%{_sbindir}
-cp bin/oo-* bin/openshift-load-balancer-daemon %{buildroot}%{_sbindir}/
+mkdir -p %{buildroot}%{_root_sbindir}
+cp bin/oo-* bin/openshift-load-balancer-daemon %{buildroot}%{_root_sbindir}/
 
 mkdir -p %{buildroot}%{gem_dir}
 cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
@@ -79,8 +79,8 @@ cp -a init/* %{buildroot}/etc/rc.d/init.d/
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
 %config(noreplace) /etc/openshift/load-balancer.conf
 %attr(0755,-,-) /etc/rc.d/init.d/openshift-load-balancer-daemon
-%attr(0750,-,-) %{_sbindir}/oo-admin-load-balancer
-%attr(0750,-,-) %{_sbindir}/openshift-load-balancer-daemon
+%attr(0750,-,-) %{_root_sbindir}/oo-admin-load-balancer
+%attr(0750,-,-) %{_root_sbindir}/openshift-load-balancer-daemon
 
 %changelog
 * Tue Sep 17 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.15-1
