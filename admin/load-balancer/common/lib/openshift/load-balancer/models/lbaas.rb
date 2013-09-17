@@ -71,7 +71,7 @@ module OpenShift
                      {
                        :pool => {
                          :name => pool_name,
-                         :method => 'LeastConnection',
+                         :method => 'RoundRobin',
                          :port => '80',
                          :enabled => 'true',
                          :monitors => [monitor_name]
