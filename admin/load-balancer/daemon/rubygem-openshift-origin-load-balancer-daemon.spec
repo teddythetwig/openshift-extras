@@ -11,7 +11,7 @@
 
 Summary:       OpenShift daemon for load-balancer integration
 Name:          rubygem-%{gem_name}
-Version: 0.13
+Version: 0.14
 Release:       1%{?dist}
 Group:         Network/Daemons
 License:       ASL 2.0
@@ -73,6 +73,9 @@ cp -a init/* %{buildroot}/etc/rc.d/init.d/
 %attr(0755,-,-) /etc/rc.d/init.d/openshift-load-balancer-daemon
 
 %changelog
+* Tue Sep 17 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.14-1
+- Add openshift-load-balancer-daemon initscript (miciah.masters@gmail.com)
+
 * Wed Sep 04 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.13-1
 - controllers/lbaas.rb: Fix delete_monitor (miciah.masters@gmail.com)
 
