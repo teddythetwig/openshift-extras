@@ -442,6 +442,8 @@ module OpenShift
         case status['Tenant_Job_Details']['status']
         when 'PENDING'
           # Nothing to do but wait some more.
+        when 'PROCESSING'
+          # Nothing to do but wait some more.
         when 'COMPLETED'
           raise LBControllerException.new "Asked for status of job #{id}, load balancer returned status of job #{status['Tenant_Job_Details']['jobId']}" unless id == status['Tenant_Job_Details']['jobId']
 
@@ -459,7 +461,7 @@ module OpenShift
 
           @logger.info "Done."
         else
-          raise LBControllerException.new "Got unknown status #{status['Tenant_Job_Details']['status']} for status job #{id}."
+          raise LBControllerException.new "Got unknown status #{status['Tenant_Job_Details']['status']} for job #{id}."
         end
       end
     end
