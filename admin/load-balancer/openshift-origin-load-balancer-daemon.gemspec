@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
+conf_dir = File.join(File.join("conf", "**"), "*")
 lib_dir  = File.join(File.join("lib", "**"), "*")
 docs_dir  = File.join(File.join("docs", "**"), "*")
 spec_file = "rubygem-openshift-origin-load-balancer-daemon.spec"
@@ -14,7 +15,7 @@ Gem::Specification.new do |s|
   s.summary     = `rpm -q --define 'rhel 7' --qf "%{description}\n" --specfile #{spec_file}`.split[0]
   s.description = `rpm -q --define 'rhel 7' --qf "%{description}\n" --specfile #{spec_file}`.split[0]
 
-  s.files       = Dir[lib_dir] + Dir[docs_dir]
+  s.files       = Dir[lib_dir] + Dir[conf_dir] + Dir[docs_dir]
   s.files       += %w(README.md Rakefile Gemfile rubygem-openshift-origin-load-balancer-daemon.spec openshift-origin-load-balancer-daemon.gemspec LICENSE COPYRIGHT)
   s.require_paths = ["lib"]
 

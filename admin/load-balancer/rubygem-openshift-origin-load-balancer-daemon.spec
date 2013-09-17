@@ -23,6 +23,7 @@ Requires:      ruby(release)
 Requires:      %{?scl:%scl_prefix}ruby(abi) >= %{rubyabi}
 %endif
 Requires:      %{?scl:%scl_prefix}rubygems
+Requires:      %{?scl:%scl_prefix}rubygem(json)
 Requires:      %{?scl:%scl_prefix}rubygem(parseconfig)
 Requires:      %{?scl:%scl_prefix}rubygem(stomp)
 %if 0%{?fedora}%{?rhel} <= 6
@@ -56,8 +57,14 @@ gem install -V \
 %{?scl:EOF}
 
 %install
+mkdir -p %{buildroot}%{_sbindir}
+cp bin/oo-* bin/openshift-load-balancer-daemon %{buildroot}%{_sbindir}/
+
 mkdir -p %{buildroot}%{gem_dir}
 cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
+
+mkdir -p %{buildroot}/etc/openshift
+mv %{buildroot}%{gem_instdir}/conf/* %{buildroot}/etc/openshift
 
 mkdir -p %{buildroot}/etc/rc.d/init.d/
 cp -a init/* %{buildroot}/etc/rc.d/init.d/
@@ -70,7 +77,10 @@ cp -a init/* %{buildroot}/etc/rc.d/init.d/
 %{gem_dir}/gems/%{gem_name}-%{version}
 %{gem_dir}/cache/%{gem_name}-%{version}.gem
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
+%config(noreplace) /etc/openshift/load-balancer.conf
 %attr(0755,-,-) /etc/rc.d/init.d/openshift-load-balancer-daemon
+%attr(0750,-,-) %{_sbindir}/oo-admin-load-balancer
+%attr(0750,-,-) %{_sbindir}/openshift-load-balancer-daemon
 
 %changelog
 * Tue Sep 17 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.14-1
