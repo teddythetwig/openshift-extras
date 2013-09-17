@@ -59,6 +59,9 @@ gem install -V \
 mkdir -p %{buildroot}%{gem_dir}
 cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
 
+mkdir -p %{buildroot}/etc/rc.d/init.d/
+cp -a init/* %{buildroot}/etc/rc.d/init.d/
+
 %files
 %dir %{gem_instdir}
 %dir %{gem_dir}
@@ -67,6 +70,7 @@ cp -a ./%{gem_dir}/* %{buildroot}%{gem_dir}/
 %{gem_dir}/gems/%{gem_name}-%{version}
 %{gem_dir}/cache/%{gem_name}-%{version}.gem
 %{gem_dir}/specifications/%{gem_name}-%{version}.gemspec
+%attr(0755,-,-) /etc/rc.d/init.d/openshift-load-balancer-daemon
 
 %changelog
 * Wed Sep 04 2013 Miciah Dashiel Butler Masters <mmasters@redhat.com> 0.13-1
